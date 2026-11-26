@@ -1,4 +1,6 @@
 import json,re,os
+from figdata import FIG,EX,IATA,CUR
+from harddata import HARD,NIX
 D=json.load(open('data.json'));C=D['C']
 old=open('../index_v2.html').read() if os.path.exists('../index_v2.html') else open('../index.html').read()
 if not os.path.exists('../index_v2.html'): open('../index_v2.html','w').write(old)
@@ -14,6 +16,7 @@ dur=json.load(open('dur3.json')) if os.path.exists('dur3.json') else {}
 cities={}
 for c in C.values():
     cities[c['id']]=dict(id=c['id'],name=c['name'],land=c['land'],co=c['co'],attr=c['attr'],trait=c['trait'],nxt=c['nxt'],hint=c['hint'],
+        iata=IATA[c['id']],hard=HARD[c['id']],nix=NIX[c['id']],cur=CUR.get(c['id'],''),
         orte=[dict(ort=w['ort'],zeuge=w['zeuge'],rolle=w['rolle'],p=w['p']) for w in c['orte']],start=c['start'])
 OV={'wien>istanbul':['Kurz vor dem Alarm fragte mich jemand nach einer Stadt, die auf zwei Kontinenten liegt. Komische Frage für ein Museum.','Die Person hat Euro in Lira getauscht und wollte wissen, wann die Fähren über den Bosporus fahren.','Auf dem Tisch lag ein Reiseführer. Vorn drauf eine rote Flagge mit weißem Halbmond und Stern.'],
 'istanbul>kairo':['Bezahlen wollte sie mit ägyptischen Pfund. Die nehme ich nicht, also ist sie weitergezogen.','Sie fragte, wie man am schnellsten an den Nil kommt. Von hier aus mit dem Schiff jedenfalls nicht.','Sie erzählte von Pyramiden, die man vom Stadtrand aus sehen kann. Da wollte sie als Nächstes hin.'],
@@ -45,6 +48,29 @@ COMPACT=r"""
 .bub{position:absolute;left:50%;top:-13%;transform:translateX(-50%);min-width:1.5em;height:1.5em;line-height:1.5em;border-radius:50%;background:var(--amber);color:#1c1405;font:700 clamp(12px,1.6cqw,20px)/1.5 var(--body);font-style:normal;text-align:center;box-shadow:0 3px 10px rgba(0,0,0,.5);animation:hop 1.1s ease-in-out infinite}
 .fig.seen .bub,.fig.talk .bub,.fig:disabled .bub{display:none}
 .act.here{border-color:var(--amber)}
+.fig{translate:calc(var(--px,0)*var(--par,1)*-.5cqw) 0;transition:translate .5s ease-out}
+.fig img{animation-delay:var(--d,0s)}
+.fig img.flip{scale:-1 1}
+.fig.ext img{animation-duration:4.6s}
+.fig:disabled{cursor:default}
+.item{position:absolute;width:5.2%;aspect-ratio:1.5;padding:0;border:0;cursor:pointer;z-index:120;transform:translateX(-50%) rotate(-12deg);background:linear-gradient(135deg,#fdf6e3,#e6d5ad);border-radius:2px;box-shadow:0 2px 6px rgba(0,0,0,.6);animation:glint 1.8s ease-in-out infinite}
+.item::after{content:"";position:absolute;inset:18% 14%;border-top:1px solid #8a6f3c;border-bottom:1px solid #8a6f3c}
+.item.out,.card.out{display:none}
+@keyframes glint{0%,100%{box-shadow:0 2px 6px rgba(0,0,0,.6),0 0 0 0 rgba(242,180,85,.0)}50%{box-shadow:0 2px 6px rgba(0,0,0,.6),0 0 14px 5px rgba(242,180,85,.85)}}
+.card{position:absolute;left:50%;top:42%;z-index:6;transform:translate(-50%,-50%) rotate(-4deg);display:flex;flex-direction:column;gap:4px;align-items:flex-start;text-align:left;min-width:44%;max-width:86%;padding:12px 18px;border:0;cursor:pointer;color:#2a2113;background:linear-gradient(180deg,#fbf3dc,#ecdcb4);border-radius:6px;box-shadow:0 14px 40px rgba(0,0,0,.65);font-family:var(--type);animation:cardin .5s cubic-bezier(.2,1.4,.4,1) both}
+.card small{font-size:11px;letter-spacing:.18em;color:#7a2f25}
+.card b{font-size:clamp(18px,3.4vw,40px);letter-spacing:.06em}.card.beleg b{font-size:clamp(15px,2.4vw,28px)}
+.card span{font-size:12px;color:#6b5a3a}
+.card.ticket{border-left:10px solid #b5483a}
+.card.beleg{border-top:6px dashed #8a6f3c}
+@keyframes cardin{from{opacity:0;transform:translate(-50%,20%) rotate(8deg) scale(.6)}to{opacity:1;transform:translate(-50%,-50%) rotate(-4deg)}}
+.stampbig.tmp{color:var(--amber);right:auto;left:50%;top:38%;margin-left:-4.2em;animation:stamp .5s cubic-bezier(.2,1.6,.4,1) both,fade .5s 1.6s both}
+@keyframes fade{to{opacity:0}}
+.raid{position:absolute;inset:0;pointer-events:none;z-index:5;mix-blend-mode:screen;animation:raid .5s steps(1) 6}
+@keyframes raid{0%{background:radial-gradient(circle at 20% 60%,rgba(60,110,255,.55),transparent 60%)}50%{background:radial-gradient(circle at 80% 60%,rgba(255,60,60,.5),transparent 60%)}}
+.chip.tick{animation:tick .6s ease}
+@keyframes tick{30%{transform:scale(1.12);box-shadow:0 0 14px rgba(242,180,85,.7)}}
+@media (prefers-reduced-motion:reduce){.item,.card,.raid,.chip.tick{animation:none!important}.fig{translate:none}}
 @keyframes figin{from{opacity:0;transform:translateX(-50%) translateX(9%)}to{opacity:1;transform:translateX(-50%)}}
 @keyframes figout{to{opacity:0;transform:translateX(-50%) translateX(-6%)}}
 @keyframes breathe{50%{transform:scaleY(1.014) scaleX(.996)}}
@@ -69,6 +95,8 @@ COMPACT=r"""
   .scene{grid-area:scene;aspect-ratio:auto;height:auto;align-self:stretch;min-height:0;border-radius:8px}
   .dialog{grid-area:scene;align-self:end;z-index:3;margin:6px;min-height:0;max-height:62%;overflow:auto;padding:8px;gap:8px;background:rgba(13,19,32,.88)}
   body.flying .dialog,body.flying .place{visibility:hidden}
+  .item{bottom:31%!important;width:7%}
+  .card{top:36%;padding:8px 12px}
   .face{flex-basis:52px;height:52px;border-radius:8px}
   .who{font-size:13px;margin:0}.who span{font-size:12px}
   .txt{font-size:13.5px;line-height:1.35}
@@ -104,10 +132,11 @@ COMPACT=r"""
   .dialog{grid-area:dialog;margin:0;max-height:26vh;align-self:auto;background:var(--panel)}
   .place{top:auto;bottom:8px}
   body.flying .dialog{visibility:visible}
+  .item{bottom:6%!important}
+  .card{top:42%}
 }
 """
 FX={'wien0':'rain','tokio0':'rain','lima1':'fog','tokio1':'fog','istanbul0':'dust','kairo0':'dust','kairo2':'dust','mumbai2':'dust','wien2':'dust','newyork0':'rain','reykjavik2':'fog','peking2':'fog','marrakesch1':'dust','nairobi0':'dust','rio2':'dust','peking1':'dust','marrakesch0':'fog'}
-FIG={'wien0':[80,5,50,'nacht'],'wien1':[57,8,58,'dunkel'],'wien2':[60,2,80,'warm']}
 FIGS=sorted(f[:-5] for f in os.listdir('../figuren') if f.endswith('.webp')) if os.path.isdir('../figuren') else []
 sus=re.search(r"const SUSPECTS=\[.*?\n\];\n",old,re.S).group(0)
 js=r'''
@@ -120,12 +149,12 @@ const OV=__OV__;
 const FOV=__FOV__;
 const FX=__FX__;
 const DUR=__DUR__;
-const FIG=__FIG__, FIGS=__FIGS__;
+const FIG=__FIG__, FIGS=__FIGS__, EX=__EX__;
 const LAND='__MASK__';
 const DAYS=['Mo','Di','Mi','Do','Fr','Sa','So'], START=9, QH=2;
-const LV={l:{n:'Leicht',buf:30,dec:3,len:6,notes:1,count:1,re:1,d:'Viel Zeit, 4 Reiseziele, das Notizbuch schreibt mit.'},
- m:{n:'Mittel',buf:16,dec:4,len:6,notes:1,count:1,re:6,d:'Knappe Frist, 5 Reiseziele. Ein neuer Haftbefehl kostet 6 Stunden.'},
- s:{n:'Schwer',buf:6,dec:5,len:7,notes:0,count:0,re:0,d:'7 Städte, 6 Reiseziele, kaum Zeitpuffer. Sie notieren selbst und haben nur einen Haftbefehl.'}};
+const LV={l:{n:'Leicht',buf:30,dec:3,len:6,notes:1,count:1,re:1,mark:1,xh:1,d:'Viel Zeit, 4 Reiseziele. Zeugen sind markiert, das Notizbuch schreibt mit.'},
+ m:{n:'Mittel',buf:16,dec:4,len:6,notes:1,count:1,re:6,mark:0,xh:1,d:'Knappe Frist, 5 Reiseziele. Den richtigen Zeugen finden Sie selbst.'},
+ s:{n:'Schwer',buf:6,dec:5,len:7,notes:0,count:0,re:0,mark:0,xh:2,d:'7 Städte, 6 Reiseziele, kaum Zeitpuffer. Sie notieren selbst und haben nur einen Haftbefehl.'}};
 let LVL='l',LEN=6;try{const v=localStorage.getItem('am-stufe');if(LV[v])LVL=v;}catch(e){}
 const $=id=>document.getElementById(id);
 const calm=matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -155,9 +184,9 @@ function newGame(){
   const ziele=route.slice(0,-1).map(()=>shuffle(others).slice(0,LC.dec));
   let t=0;for(let w=0;w<LEN;w++){let u=START;for(let i=0;i<LEN-1;i++){for(let q=0;q<3;q++)u=step(u,QH);if(i===w)u=step(u,1);u=step(u,hours(route[i],route[i+1]));}
     if(w===LEN-1)u=step(u,1);u=step(u,QH);u=step(u,QH);t=Math.max(t,u);}DEAD=LC.buf>10?Math.ceil((t+LC.buf)/6)*6:t+LC.buf;
-  S={route,ziele,i:0,decoy:null,t:START,seen:{},notes:[],profile:{},warrant:null,culprit:SUSPECTS[Math.floor(Math.random()*SUSPECTS.length)],fin:0,over:false,started:false,busy:false,scene:null};
+  S={route,ziele,i:0,decoy:null,t:START,seen:{},notes:[],profile:{},warrant:null,culprit:SUSPECTS[Math.floor(Math.random()*SUSPECTS.length)],fin:0,xs:{},items:route.slice(0,-1).map((r,n)=>({k:Math.floor(Math.random()*3),type:(LVL==='s'||!CITY[route[n+1]].cur||Math.random()<.5)?'ticket':'beleg',found:false})),over:false,started:false,busy:false,scene:null};
   ATTR.forEach(a=>S.profile[a[0]]='');lastNote=0;
-  const st=document.querySelector('.stampbig');if(st)st.remove();
+  document.querySelectorAll('.stampbig,.card,.raid').forEach(x=>x.remove());
   const c=CITY[start],fall='Fall: '+c.start.fall;
   document.querySelector('h1 small').textContent=fall+' · '+LC.n;document.querySelector('#titlecard em').textContent=fall;
   $('titlecard').classList.remove('gone');
@@ -188,37 +217,59 @@ function say(name,role,text,clips,pslug){
   const tick=30,step=speak?Math.max(.35,text.length/(secs*.92*1000/tick)):2;let k=0;el.textContent='';f.classList.add('talk');
   typing=setInterval(()=>{k+=step;el.textContent=text.slice(0,Math.ceil(k));if(k>=text.length){clearInterval(typing);if(!cur)f.classList.remove('talk');}},tick);
 }
-let figKey='';
+let figKey='',lastT=-1;
+function mkFig(slug,p,flip,ton,label,alt,fn,cls){
+  const has=FIGS.includes(slug),b=document.createElement('button');b.type='button';b.className='fig '+(has?'full ':'chip ')+(ton||'')+' '+(cls||'');b.dataset.p=slug;
+  b.style.left=p[0]+'%';b.style.bottom=(has?p[1]:p[1]+p[2]*.55)+'%';b.style.height=(has?p[2]:20)+'%';b.style.zIndex=100-Math.round(p[1]);
+  b.style.setProperty('--d',(-(Math.random()*3).toFixed(2))+'s');b.style.setProperty('--par',(1.4-p[1]/40).toFixed(2));
+  b.setAttribute('aria-label',label);
+  const im=new Image();im.src=(has?'figuren/':'portraits/')+slug+'.webp';im.alt=alt;im.draggable=false;if(flip&&has)im.classList.add('flip');
+  b.append(im);b.onclick=fn;return b;}
 function stageFig(){
-  if(!S)return;const id=S.scene||'',city=id.slice(0,-1),k=+id.slice(-1),c=CITY[city];
+  if(!S)return;const id=S.scene||'',city=id.slice(0,-1),k=+id.slice(-1),c=CITY[city],LC=LV[LVL];
   const want=S.started&&!S.decoy&&c&&c.id===cityNow().id?id:'';
-  const key=want+'|'+camOn+'|'+(want&&S.seen[S.i+'_'+k]?1:0)+'|'+(S.over?1:0);
-  if(key===figKey)return;const same=key.split('|').slice(0,2).join()===figKey.split('|').slice(0,2).join();figKey=key;
-  if(same){const f=document.querySelector('.fig');if(f){f.classList.toggle('seen',!!S.seen[S.i+'_'+k]);f.disabled=!!S.over;}return;}
-  document.querySelectorAll('.fig').forEach(f=>{f.classList.add('out');setTimeout(()=>f.remove(),500);});
-  if(!want)return;
-  const o=c.orte[k],p=FIG[id]||[66,5,58,''],has=FIGS.includes(o.p);
-  const b=document.createElement('button');b.type='button';b.className='fig '+(has?'full ':'chip ')+(p[3]||'')+(S.seen[S.i+'_'+k]?' seen':'');b.dataset.p=o.p;
-  b.style.left=p[0]+'%';b.style.bottom=p[1]+'%';b.style.height=(has?p[2]:22)+'%';if(!has)b.style.bottom=(p[1]+p[2]*.55)+'%';
-  b.setAttribute('aria-label','Mit '+o.zeuge+' sprechen, '+o.rolle);
-  const im=new Image();im.src=(has?'figuren/':'portraits/')+o.p+'.webp';im.alt=o.zeuge+', '+o.rolle+' am Schauplatz '+o.ort;im.draggable=false;
-  const bub=document.createElement('i');bub.className='bub';bub.textContent='!';b.append(im,bub);
-  b.onclick=()=>ask(k);b.disabled=!!S.over;
-  $('cam'+camOn).querySelector('.stg').append(b);
+  const base=want+'|'+camOn+'|'+S.i+'|'+LVL;
+  if(base!==figKey){figKey=base;
+    document.querySelectorAll('.fig:not(.out),.item,.card').forEach(f=>{if(f.classList.contains('fig')){f.classList.add('out');setTimeout(()=>f.remove(),500);}else f.remove();});
+    if(want){const o=c.orte[k],P=FIG[id]||{w:[66,5,58],t:'',e:[]},st=$('cam'+camOn).querySelector('.stg');
+      const w=mkFig(o.p,P.w,0,P.t,'Mit '+o.zeuge+' sprechen, '+o.rolle,o.zeuge+', '+o.rolle+' am Schauplatz '+o.ort,()=>ask(k),'wit');
+      if(LC.mark){const bub=document.createElement('i');bub.className='bub';bub.textContent='!';w.append(bub);}
+      st.append(w);
+      (P.e||[]).forEach(e=>{if(!EX[e[0]]||!FIGS.includes(e[0]))return;st.append(mkFig(e[0],[e[1],e[2],e[3]],e[4],P.t,'Mit '+EX[e[0]][0]+' sprechen',EX[e[0]][0]+' am Schauplatz '+o.ort,()=>askExtra(e[0]),'ext'));});
+      const it=S.items&&S.items[S.i];
+      if(it&&it.k===k&&!it.found&&!isFinal()){const b=document.createElement('button');b.type='button';b.className='item';b.setAttribute('aria-label','Fundstück ansehen');
+        const x=P.w[0]+(P.w[0]>50?-24:24);b.style.left=x+'%';b.style.bottom=Math.max(2,P.w[1]-2)+'%';b.onclick=pick;st.append(b);}
+    }
+  }
+  document.querySelectorAll('.fig:not(.out)').forEach(f=>{if(f.classList.contains('wit'))f.classList.toggle('seen',!!S.seen[S.i+'_'+k]);f.disabled=!!S.over||!!S.busy;});
+  if(S.t!==lastT){lastT=S.t;const ch=$('clock').parentElement;ch.classList.remove('tick');void ch.offsetWidth;ch.classList.add('tick');}
 }
-function goTo(k){if(S.over||S.busy)return;const c=cityNow(),o=c.orte[k];if(S.scene===c.id+k){ask(k);return;}
-  stopAudio();setScene(c.id+k,o.ort,c.name+', '+c.land);
-  say('Direktorin Halberg','per Funk',o.zeuge+' ('+o.rolle+') ist hier. Sprechen Sie die Person an.');render();}
-setInterval(()=>{if(!S)return;const f=document.querySelector('.fig:not(.out)'),on=!!f&&$('face').classList.contains('talk')&&S.spk===f.dataset.p,cam=$('cam'+camOn);
-  if(f)f.classList.toggle('talk',on);
-  if(on&&!cam.classList.contains('zoom')){const r=cam.getBoundingClientRect(),q=f.getBoundingClientRect();cam.style.transformOrigin=((q.left+q.width/2-r.left)/r.width*100).toFixed(1)+'% '+((q.top+q.height*.3-r.top)/r.height*100).toFixed(1)+'%';}
+function askExtra(slug){if(S.over||S.busy)return;const e=EX[slug],n=(S.xs[slug]=(S.xs[slug]||0)+1)%2,slept=advance(LV[LVL].xh);
+  say(e[0],'Passant',e[2][n]+(slept?'\n\n(Danach haben Sie bis 7 Uhr geschlafen.)':''),['e_'+slug+'_'+n],slug);timeUp();render();}
+function pick(){if(S.over||S.busy)return;const it=S.items[S.i],y=S.route[S.i+1],c=cityNow();it.found=true;advance(1);
+  document.querySelectorAll('.item').forEach(x=>x.remove());
+  const card=document.createElement('button');card.type='button';card.className='card '+it.type;card.setAttribute('aria-label','Fundstück schließen');
+  let txt;
+  if(it.type==='ticket'){card.innerHTML='<small>BORDKARTE · ABSCHNITT</small><b>'+c.iata+' → '+CITY[y].iata+'</b><span>Sitz 14C · Gate geschlossen</span>';txt='Abschnitt einer Bordkarte, Strecke '+c.iata+' → '+CITY[y].iata+'.';}
+  else{card.innerHTML='<small>WECHSELSTUBE · QUITTUNG</small><b>'+CITY[y].cur+'</b><span>Betrag bar ausgezahlt</span>';txt='Quittung einer Wechselstube, ausgezahlt in: '+CITY[y].cur+'.';}
+  card.onclick=()=>card.remove();$('scene').append(card);
+  note(c.name,'Fundstück',txt);
+  say('Direktorin Halberg','per Funk','Gut gesehen. Das hat die gesuchte Person verloren.\n\nFundstück: '+txt,['h_item']);timeUp();render();}
+function goTo(k){if(S.over||S.busy)return;const c=cityNow(),o=c.orte[k];if(S.scene===c.id+k){if(LV[LVL].mark)ask(k);return;}
+  stopAudio();document.querySelectorAll('.card').forEach(x=>x.remove());setScene(c.id+k,o.ort,c.name+', '+c.land);
+  say('Direktorin Halberg','per Funk',LV[LVL].mark?o.zeuge+' ('+o.rolle+') ist hier. Sprechen Sie die Person an.':'Gesucht wird hier: '+o.rolle+'. Sehen Sie sich um und sprechen Sie die richtige Person an.');render();}
+setInterval(()=>{if(!S)return;const cam=$('cam'+camOn);let on=false;
+  document.querySelectorAll('.fig:not(.out)').forEach(f=>{const t=$('face').classList.contains('talk')&&S.spk===f.dataset.p;f.classList.toggle('talk',t);
+    if(t){on=true;if(!cam.classList.contains('zoom')){const r=cam.getBoundingClientRect(),q=f.getBoundingClientRect();cam.style.transformOrigin=((q.left+q.width/2-r.left)/r.width*100).toFixed(1)+'% '+((q.top+q.height*.3-r.top)/r.height*100).toFixed(1)+'%';}}});
   document.querySelectorAll('.cam').forEach(x=>x.classList.toggle('zoom',on&&x===cam));},160);
+$('scene').addEventListener('pointermove',e=>{const r=$('scene').getBoundingClientRect();$('scene').style.setProperty('--px',((e.clientX-r.left)/r.width*2-1).toFixed(3));});
 function note(stadt,zeuge,text){if(!LV[LVL].notes)return;S.notes.unshift({stadt,zeuge,text});}
 function beute(){return CITY[S.route[0]].start.beute;}
 function timeUp(){if(S.t<=DEAD)return false;finish(false,'Die Frist ist abgelaufen. Die Spur ist kalt und der Zirkel hat die Beute außer Landes gebracht.','h_time');return true;}
 function finish(win,text,clip){
   if(S.over)return;S.over=true;S.win=win;say('Direktorin Halberg','Büro Meridian',text,[clip]);
   const d=document.createElement('div');d.className='stampbig '+(win?'win':'lose');d.textContent=win?'FALL GELÖST':'FALL VERLOREN';$('scene').append(d);
+  if(win){const r=document.createElement('i');r.className='raid';$('scene').append(r);setTimeout(()=>r.remove(),3200);}
 }
 function line(c,k){
   if(isFinal()){const t=(FOV[c.id]||FINAL)[k];return {text:t,clips:['f_'+c.id+'_'+k]};}
@@ -270,6 +321,7 @@ function issue(){
   const m=matches();if(S.over||S.busy||!S.started||m.length!==1)return;
   const LC=LV[LVL];if(S.warrant&&(!LC.re||S.warrant===m[0].name))return;
   advance(S.warrant?LC.re:1);S.warrant=m[0].name;
+  {const d=document.createElement('div');d.className='stampbig tmp';d.textContent='HAFTBEFEHL';$('scene').append(d);setTimeout(()=>d.remove(),2200);}
   say('Direktorin Halberg','per Funk','Der Haftbefehl ist unterschrieben. Ich hoffe, Sie sind sich sicher.'+(isFinal()?'':'\n\n(Folgen Sie jetzt der Spur weiter, bis sie endet. Dort kommt es zum Zugriff.)'),['h_warrant']);
   timeUp();render();
 }
@@ -290,7 +342,7 @@ function render(){
   else{
     const q=box('Befragen');
     if(S.decoy)q.append(btn('Am Flughafen umhören','1 h',()=>ask(0)));
-    else c.orte.forEach((o,k)=>{const done=S.seen[S.i+'_'+k];const here=S.scene===c.id+k;q.append(btn(o.ort,done?'notiert':here?'ansprechen · '+QH+' h':'hingehen',()=>goTo(k),(done?'done':'')+(here?' here':'')));});
+    else c.orte.forEach((o,k)=>{const done=S.seen[S.i+'_'+k];const here=S.scene===c.id+k;q.append(btn(o.ort,done?'notiert':here?(LC.mark?'ansprechen · '+QH+' h':'hier'):'hingehen',()=>goTo(k),(done?'done':'')+(here?' here':'')));});
     const r=box('Reisen','r');
     if(S.decoy)r.append(btn('Zurück nach '+c.name,hours(S.decoy,c.id)+' h',()=>travel(c.id,hours(S.decoy,c.id),false)));
     else if(isFinal()){const p=document.createElement('p');p.className='hint';p.textContent='Die Spur endet in '+c.name+'. Hier fällt die Entscheidung.';r.append(p);}
@@ -325,7 +377,7 @@ if(!calm)requestAnimationFrame(fxLoop);
 '''
 FOV['lima'][2]='Die Person, die Sie suchen, kann nicht weit sein. Beeilen Sie sich.' if 'f_lima_2' in dur and False else 'Vor zehn Minuten wollte jemand hier etwas Wertvolles schätzen lassen. Die Person kann nicht weit sein.'
 J=lambda o:json.dumps(o,ensure_ascii=False,separators=(',',':'))
-js=js.replace('__CLUE__',J(D['CLUE'])).replace('__FINAL__',J(D['FINAL'])).replace('__SUS__',sus).replace('__CITY__',J(cities)).replace('__OV__',J(OV)).replace('__FOV__',J(FOV)).replace('__FX__',J(FX)).replace('__DUR__',J(dur)).replace('__FIG__',J(FIG)).replace('__FIGS__',J(FIGS)).replace('__MASK__',mask).replace('__MID__',mid)
+js=js.replace('__CLUE__',J(D['CLUE'])).replace('__FINAL__',J(D['FINAL'])).replace('__SUS__',sus).replace('__CITY__',J(cities)).replace('__OV__',J(OV)).replace('__FOV__',J(FOV)).replace('__FX__',J(FX)).replace('__DUR__',J(dur)).replace('__FIG__',J(FIG)).replace('__FIGS__',J(FIGS)).replace('__EX__',J(EX)).replace('__MASK__',mask).replace('__MID__',mid)
 head=head.replace('<h1>Akte Meridian<small>Fall 1 · Das Salzfass von Wien</small></h1>','<h1>Akte Meridian<small>Fall</small></h1>').replace('Frist Sa 18:00 · noch <b id="remain">129 h</b>','Frist <b id="frist">Sa 18:00</b> · noch <b id="remain">129 h</b>').replace('<em>Fall 1 · Das Salzfass von Wien</em>','<em>Fall</em>')
 head=head.replace('<div class="left">','<nav class="tabs" id="tabs" aria-label="Bereiche"><button type="button" data-t="q" aria-pressed="true">Befragen</button><button type="button" data-t="r" aria-pressed="false">Reisen</button><button type="button" data-t="p" aria-pressed="false">Profil</button><button type="button" data-t="n" id="tab-n" aria-pressed="false">Notizen</button></nav>\n    <div class="left">')
 head=head.replace('<section>\n        <h2>Täterprofil</h2>','<section id="sec-p">\n        <h2>Täterprofil</h2>').replace('<section>\n        <h2>Kartei: Der Zirkel</h2>','<section id="sec-k">\n        <h2>Kartei: Der Zirkel</h2>').replace('<section>\n        <h2>Notizbuch</h2>','<section id="sec-n">\n        <h2>Notizbuch</h2>')
