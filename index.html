@@ -395,8 +395,8 @@ function say(name,role,text,clips,pslug){
   const speak=voiceOn&&clips.length,secs=speak?clips.reduce((n,c)=>n+DUR[c],0):0;
   if(speak){aq=clips.slice();f.classList.add('talk');nextClip();}
   if(calm){el.textContent=text;return;}
-  const tick=30,step=speak?Math.max(.35,text.length/(secs*.92*1000/tick)):2;let k=0;el.textContent='';f.classList.add('talk');
-  typing=setInterval(()=>{k+=step;el.textContent=text.slice(0,Math.ceil(k));if(k>=text.length){clearInterval(typing);if(!cur)f.classList.remove('talk');}},tick);
+  const t0=performance.now(),total=speak?Math.min(secs*920,text.length*70):text.length*15;el.textContent='';f.classList.add('talk');
+  typing=setInterval(()=>{const k=Math.ceil(text.length*Math.min(1,(performance.now()-t0)/total));el.textContent=text.slice(0,k);if(k>=text.length){clearInterval(typing);if(!cur)f.classList.remove('talk');}},30);
 }
 let figKey='',lastT=-1;
 function mkFig(slug,p,flip,ton,label,alt,fn,cls){
