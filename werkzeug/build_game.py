@@ -185,6 +185,22 @@ body[data-mode="title"] .actions,body[data-mode="title"] .dialog{visibility:hidd
 .lv{display:flex;gap:6px}.lv button{flex:1;min-width:0;background:transparent;color:var(--muted);border:1px solid var(--line);border-radius:8px;padding:8px 4px;font:inherit;font-size:14px;min-height:38px;cursor:pointer}.lv button[aria-pressed="true"]{background:var(--amber);color:#1c1405;border-color:var(--amber);font-weight:600}
 #map{object-fit:contain;z-index:4}
 [hidden]{display:none!important}
+.act{min-width:0}.act>span{min-width:0;overflow-wrap:anywhere}.act small{white-space:normal;min-width:0;text-align:right;overflow-wrap:anywhere}
+.cm{display:flex;flex-direction:column;gap:8px}
+.cmm{position:relative;width:min(100%,calc((100dvh - 200px)*1.7778));min-width:240px;aspect-ratio:16/9;margin:0 auto;border-radius:8px;overflow:hidden;box-shadow:0 6px 18px rgba(0,0,0,.5)}
+.cmm img{width:100%;height:100%;display:block;object-fit:cover}
+.cmp{position:absolute;transform:translate(-50%,calc(-100% - 10px));display:flex;flex-direction:column;align-items:center;background:rgba(13,19,32,.92);color:#f6e7c8;border:1.5px solid var(--amber);border-radius:9px;padding:3px 9px 4px;font:inherit;line-height:1.25;cursor:pointer;white-space:nowrap;z-index:2}
+.cmp::after{content:"";position:absolute;left:50%;bottom:-16px;width:12px;height:12px;margin-left:-8px;border-radius:50%;background:#b5483a;border:2px solid #fff;box-shadow:0 2px 4px rgba(0,0,0,.6)}
+.cmp b{font-size:13px;font-weight:600}.cmp small{font-size:11px;color:#b9c2d3}
+.cmp.dn{transform:translate(-50%,10px)}.cmp.dn::after{bottom:auto;top:-16px}
+.cmp.l{transform:translate(-14%,calc(-100% - 10px))}.cmp.l::after{left:14%}.cmp.l.dn{transform:translate(-14%,10px)}
+.cmp.r{transform:translate(-86%,calc(-100% - 10px))}.cmp.r::after{left:86%}.cmp.r.dn{transform:translate(-86%,10px)}
+.cmp.here{border-color:#58c7bd}.cmp.done b::after{content:" ✓";color:#58c7bd}
+.cmp:hover,.cmp:focus-visible{background:var(--amber);color:#1c1405}.cmp:hover small,.cmp:focus-visible small{color:#1c1405}
+.cmme{position:absolute;width:20px;height:20px;margin:-10px 0 0 -10px;border-radius:50%;background:var(--amber);border:3px solid #1c1405;box-shadow:0 0 0 4px rgba(242,180,85,.45);transition:left .7s ease-in-out,top .7s ease-in-out;z-index:3;pointer-events:none}
+@media (max-width:1100px),(max-height:700px){.cmp b{font-size:11.5px}.cmp small{font-size:10px}.cmp{padding:2px 7px 3px}}
+@media (prefers-reduced-motion:reduce){.cmme{transition:none}}
+@media (max-height:520px) and (orientation:landscape){.cm{display:grid;grid-template-columns:auto minmax(110px,1fr);align-items:center;gap:8px 12px}.cm .wmh{grid-column:1/-1;margin:0}.cmm{width:min(100%,calc((100dvh - 128px)*1.7778))}.cm .act{flex-direction:column;align-items:flex-start}}
 .notes li.new{animation-name:fadein}@keyframes fadein{from{opacity:0}to{opacity:1}}
 @media (orientation:landscape){.sheet .mug{grid-template-columns:repeat(8,minmax(0,1fr))}}
 .sheet{animation-name:fadein}
@@ -342,7 +358,7 @@ function newGame(fix){
   const others=Object.keys(CITY).filter(k=>!route.includes(k));
   const ziele=route.slice(0,-1).map(()=>shuffle(others).slice(0,Math.min(others.length,LC.dec+Math.floor(NA/3))));
   let t=0;for(let w=0;w<LEN;w++){let u=START;for(let i=0;i<LEN-1;i++){for(let q=0;q<3;q++)u=step(u,QH);if(i===w)u=step(u,1);u=step(u,hours(route[i],route[i+1])+2);}
-    if(w===LEN-1)u=step(u,1);u=step(u,QH);u=step(u,QH);t=Math.max(t,u);}DEAD=BUF>10?Math.ceil((t+BUF)/6)*6:t+BUF;
+    if(w===LEN-1)u=step(u,1);u=step(u,QH);u=step(u,QH);t=Math.max(t,u);}{const WB=BUF+walkH()*2*LEN;DEAD=BUF>10?Math.ceil((t+WB)/6)*6:t+WB;}
   document.body.dataset.lv=LVL;
   S={route,ziele,i:0,decoy:null,t:START,seen:{},notes:[],profile:{},warrant:null,culprit:SUSPECTS[Math.floor(Math.random()*SUSPECTS.length)],fin:0,xs:{},hs:{},cash:1500,items:route.slice(0,-1).map((r,n)=>({k:Math.floor(Math.random()*3),h:Math.floor(Math.random()*3),type:(LVL==='s'||!CITY[route[n+1]].cur||Math.random()<.5)?'ticket':'beleg',found:false})),over:false,started:false,busy:false,scene:null};
   ATTR.forEach(a=>S.profile[a[0]]='');lastNote=0;
@@ -451,7 +467,9 @@ function pick(wo){if(S.over||S.busy)return;const it=S.items[S.i],y=S.route[S.i+1
   card.onclick=e=>{if(!e||e.detail===0)card.remove();};card._t=performance.now();$('scene').append(card);
   note(c.name,'Fundstück',txt);
   say('Direktorin Halberg','per Funk','Gut gesehen. Das hat die gesuchte Person verloren.\n\nFundstück'+(typeof wo==='string'?' ('+wo+')':'')+': '+txt,['h_item']);timeUp();render();}
+function walkH(){return LVL==='l'?0:1;}
 function goTo(k){if(S.over||S.busy)return;const c=cityNow(),o=c.orte[k];if(S.scene===c.id+k){if(LV[LVL].mark)ask(k);return;}
+  if(walkH()){advance(walkH());if(timeUp()){render();return;}}
   stopAudio();document.querySelectorAll('.card').forEach(x=>x.remove());setScene(c.id+k,o.ort,c.name+', '+c.land);
   say('Direktorin Halberg','per Funk',LV[LVL].mark?o.zeuge+' ('+o.rolle+') ist hier. Sprechen Sie die Person an.'+(S.items[S.i]&&S.items[S.i].k===k&&!S.items[S.i].found&&!isFinal()?' Außerdem liegt hier etwas am Boden.':''):'Gesucht wird hier: '+o.rolle+'. Sehen Sie sich um und sprechen Sie die richtige Person an.');render();}
 setInterval(()=>{if(!S)return;const cam=$('cam'+camOn);let on=false;
@@ -554,7 +572,8 @@ function render(){
   else{
     const q=box('Befragen');
     if(S.decoy)q.append(btn('Am Flughafen umhören','1 h',()=>ask(0)));
-    else c.orte.forEach((o,k)=>{const done=S.seen[S.i+'_'+k];const here=S.scene===c.id+k;q.append(btn(o.ort,done?'notiert':here?(LC.mark?'ansprechen · '+QH+' h':'hier'):'hingehen',()=>goTo(k),(done?'done':'')+(here?' here':'')));});
+    else{const k=S.scene.indexOf(c.id)===0?+S.scene.slice(-1):0,o=c.orte[k],done=S.seen[S.i+'_'+k],nd=c.orte.filter((x,j)=>S.seen[S.i+'_'+j]).length;
+      q.append(btn(o.ort,done?'notiert':LC.mark?'ansprechen · '+QH+' h':'hier',()=>goTo(k),(done?'done':'')+' here'),btn('Stadtplan','3 Orte · '+nd+' notiert'+(walkH()?' · Weg '+walkH()+' h':''),citymap));}
     const r=box('Reisen','r');
     if(isFinal()&&!S.decoy){const p=document.createElement('p');p.className='hint';p.textContent='Die Spur endet in '+c.name+'. Hier fällt die Entscheidung.';r.append(p);}
     else{const p=document.createElement('p');p.className='hint';p.textContent='Spesen '+S.cash.toLocaleString('de-DE')+' · Prämien '+META.money.toLocaleString('de-DE');r.append(p,btn('Weltkarte öffnen','Ziel und Verkehrsmittel wählen',worldmap,'here'));
@@ -608,7 +627,7 @@ if(!calm)requestAnimationFrame(fxLoop);
 '''
 FOV['lima'][2]='Die Person, die Sie suchen, kann nicht weit sein. Beeilen Sie sich.' if 'f_lima_2' in dur and False else 'Vor zehn Minuten wollte jemand hier etwas Wertvolles schätzen lassen. Die Person kann nicht weit sein.'
 J=lambda o:json.dumps(o,ensure_ascii=False,separators=(',',':'))
-js=js.replace('__CLUE__',J(D['CLUE'])).replace('__FINAL__',J(D['FINAL'])).replace('__SUS__',sus).replace('__CITY__',J(cities)).replace('__OV__',J(OV)).replace('__FOV__',J(FOV)).replace('__FX__',J(FX)).replace('__DUR__',J(dur)).replace('__FIG__',J(FIG)).replace('__FIGS__',J(FIGS)).replace('__EX__',J(EX)).replace('__HOT__',J(HOT)).replace('__MASK__',mask).replace('__MID__',mid).replace('__META__',open('meta.js').read())
+js=js.replace('__CLUE__',J(D['CLUE'])).replace('__FINAL__',J(D['FINAL'])).replace('__SUS__',sus).replace('__CITY__',J(cities)).replace('__OV__',J(OV)).replace('__FOV__',J(FOV)).replace('__FX__',J(FX)).replace('__DUR__',J(dur)).replace('__FIG__',J(FIG)).replace('__FIGS__',J(FIGS)).replace('__EX__',J(EX)).replace('__HOT__',J(HOT)).replace('__MASK__',mask).replace('__MID__',mid).replace('__META__',open('meta.js').read()).replace('__PLAN__',J({"wien": [[11, 34], [80, 84], [26, 66]], "istanbul": [[45, 60], [50, 84], [83, 50]], "kairo": [[26, 40], [50, 82], [78, 54]], "mumbai": [[25, 84], [62, 55], [33, 22]], "tokio": [[20, 42], [75, 58], [73, 22]], "lima": [[47, 36], [35, 78], [80, 55]], "paris": [[27, 40], [64, 72], [68, 18]], "newyork": [[38, 48], [55, 25], [38, 85]], "rio": [[22, 72], [54, 24], [72, 78]], "sydney": [[56, 54], [88, 45], [25, 76]], "nairobi": [[44, 23], [65, 78], [30, 54]], "peking": [[50, 48], [20, 55], [78, 76]], "marrakesch": [[62, 38], [31, 52], [58, 68]], "reykjavik": [[15, 37], [53, 58], [74, 70]]}))
 head=head.replace('<h1>Akte Meridian<small>Fall 1 · Das Salzfass von Wien</small></h1>','<h1>Akte Meridian<small>Fall</small></h1>').replace('Frist Sa 18:00 · noch <b id="remain">129 h</b>','Frist <b id="frist">Sa 18:00</b> · noch <b id="remain">129 h</b>').replace('<em>Fall 1 · Das Salzfass von Wien</em>','<em>Fall</em>')
 head=head.replace('<div class="left">','<nav class="tabs" id="tabs" aria-label="Bereiche"><button type="button" data-t="q" aria-pressed="true">Befragen</button><button type="button" data-t="r" aria-pressed="false">Reisen</button><button type="button" data-t="p" aria-pressed="false">Profil</button><button type="button" data-t="n" id="tab-n" aria-pressed="false">Notizen</button></nav>\n    <div class="left">')
 head=head.replace('<section>\n        <h2>Täterprofil</h2>','<section id="sec-p">\n        <h2>Täterprofil</h2>').replace('<section>\n        <h2>Kartei: Der Zirkel</h2>','<section id="sec-k">\n        <h2>Kartei: Der Zirkel</h2>').replace('<section>\n        <h2>Notizbuch</h2>','<section id="sec-n">\n        <h2>Notizbuch</h2>')

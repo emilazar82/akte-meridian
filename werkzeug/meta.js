@@ -146,3 +146,12 @@ function chase(done){if(window.SKIPCHASE){done();return;}
     if(end){g.fillStyle='rgba(8,12,22,.55)';g.fillRect(0,0,W,H);g.fillStyle=end===1?'#f2b455':'#e8796b';g.font='700 64px "Playfair Display",Georgia,serif';g.textAlign='center';g.fillText(end===1?'Gefasst!':'Entwischt!',W/2,H/2);
       if(now-tEnd>1100){if(end===1){close();done();render();}else lost();}}};
   ov._st=()=>({obs,gap,hits,W,y,on,end,V});raf=requestAnimationFrame(frame);}
+const PLAN=__PLAN__;
+function citymap(){if(S.over||S.busy||S.decoy)return;const c=cityNow(),P=PLAN[c.id],cur=S.scene.indexOf(c.id)===0?+S.scene.slice(-1):0,d=el('div','cm'),m=el('div','cmm'),wh=walkH();
+  const im=new Image();im.src='plan/'+c.id+'.webp';im.alt='Gemalter Stadtplan von '+c.name+' mit den drei Schauplätzen';im.draggable=false;m.append(im);
+  const me=el('i','cmme');me.style.left=P[cur][0]+'%';me.style.top=P[cur][1]+'%';let gone=false;
+  c.orte.forEach((o,k)=>{const dn=S.seen[S.i+'_'+k],b=el('button','cmp'+(k===cur?' here':'')+(dn?' done':'')+(P[k][1]<32?' dn':'')+(P[k][0]<22?' l':P[k][0]>78?' r':''));b.type='button';b.style.left=P[k][0]+'%';b.style.top=P[k][1]+'%';
+    b.append(el('b','',o.ort),el('small','',k===cur?'Sie sind hier':(dn?'notiert · ':'')+(wh?wh+' h Fußweg':'hingehen')));
+    b.onclick=()=>{if(gone)return;if(k===cur){closeSheet();return;}gone=true;if(calm){closeSheet();goTo(k);return;}me.style.left=P[k][0]+'%';me.style.top=P[k][1]+'%';setTimeout(()=>{closeSheet();goTo(k);},760);};m.append(b);});
+  m.append(me);const fl=btn('Zum Flughafen','Weltkarte öffnen',()=>{closeSheet();worldmap();},'here');fl.disabled=isFinal();
+  d.append(el('p','wmh',c.name+', '+c.land+' · '+(wh?'Jeder Fußweg kostet '+wh+' Stunde.':'Auf Stufe Leicht kosten Fußwege keine Zeit.')),m,fl);sheet('Stadtplan',d);$('sheet')._fit();const z=parseFloat(d.style.zoom)||1;m.querySelectorAll('.cmp').forEach(b=>{const R=m.getBoundingClientRect();let r=b.getBoundingClientRect();if(r.top<R.top+2){b.classList.add('dn');}else if(r.bottom>R.bottom-2){b.classList.remove('dn');}r=b.getBoundingClientRect();const dx=r.left<R.left+2?R.left+2-r.left:r.right>R.right-2?R.right-2-r.right:0;if(dx)b.style.marginLeft=(dx/z)+'px';});}
