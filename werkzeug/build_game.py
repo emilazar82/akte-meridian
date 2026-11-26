@@ -1,6 +1,7 @@
 import json,re,os
 from figdata import FIG,EX,IATA,CUR
 from harddata import HARD,NIX
+from hotdata import HOT
 D=json.load(open('data.json'));C=D['C']
 old=open('../index_v2.html').read() if os.path.exists('../index_v2.html') else open('../index.html').read()
 if not os.path.exists('../index_v2.html'): open('../index_v2.html','w').write(old)
@@ -69,6 +70,17 @@ COMPACT=r"""
 @keyframes fade{to{opacity:0}}
 .raid{position:absolute;inset:0;pointer-events:none;z-index:5;mix-blend-mode:screen;animation:raid .5s steps(1) 6}
 @keyframes raid{0%{background:radial-gradient(circle at 20% 60%,rgba(60,110,255,.55),transparent 60%)}50%{background:radial-gradient(circle at 80% 60%,rgba(255,60,60,.5),transparent 60%)}}
+.hot{position:absolute;width:11%;aspect-ratio:1;padding:0;border:0;background:none;border-radius:50%;cursor:pointer;transform:translate(-50%,50%);z-index:1;-webkit-tap-highlight-color:transparent}
+.hot::after{content:"";position:absolute;left:50%;top:50%;width:9px;height:9px;margin:-4.5px;border-radius:50%;background:#fff3c4;box-shadow:0 0 8px 3px rgba(255,226,150,.9);animation:twinkle 2.6s ease-in-out infinite}
+.hot:nth-of-type(2n)::after{animation-delay:-.9s}.hot:nth-of-type(3n)::after{animation-delay:-1.7s}
+.hot.seen::after{opacity:.25;animation:none;box-shadow:none}
+.hot:hover::after,.hot:focus-visible::after{transform:scale(1.6)}
+.hot:focus-visible{outline:2px solid var(--amber)}
+body[data-lv="s"] .hot::after{display:none}
+@keyframes twinkle{0%,100%{opacity:.25;transform:scale(.6)}50%{opacity:1;transform:scale(1.15)}}
+.item{width:8%;animation:glint 1.3s ease-in-out infinite,hopi 1.3s ease-in-out infinite}
+@keyframes hopi{50%{margin-bottom:1.2%}}
+@media (prefers-reduced-motion:reduce){.hot::after{animation:none!important;opacity:.8}}
 .chip.tick{animation:tick .6s ease}
 @keyframes tick{30%{transform:scale(1.12);box-shadow:0 0 14px rgba(242,180,85,.7)}}
 @media (prefers-reduced-motion:reduce){.item,.card,.raid,.chip.tick{animation:none!important}.fig{translate:none}}
@@ -96,7 +108,9 @@ COMPACT=r"""
   .scene{grid-area:scene;aspect-ratio:auto;height:auto;align-self:stretch;min-height:0;border-radius:8px}
   .dialog{grid-area:scene;align-self:end;z-index:3;margin:6px;min-height:0;max-height:62%;overflow:auto;padding:8px;gap:8px;background:rgba(13,19,32,.88)}
   body.flying .dialog,body.flying .place{visibility:hidden}
-  .item{bottom:31%!important;width:7%}
+  .dialog{pointer-events:none;transition:opacity .5s}
+  .dialog.idle{opacity:0}
+  .item{width:9%}
   .card{top:36%;padding:8px 12px}
   .face{flex-basis:52px;height:52px;border-radius:8px}
   .who{font-size:13px;margin:0}.who span{font-size:12px}
@@ -133,7 +147,7 @@ COMPACT=r"""
   .dialog{grid-area:dialog;margin:0;max-height:26vh;align-self:auto;background:var(--panel)}
   .place{top:auto;bottom:8px}
   body.flying .dialog{visibility:visible}
-  .item{bottom:6%!important}
+  .dialog{pointer-events:auto}.dialog.idle{opacity:1}
   .card{top:42%}
 }
 """
@@ -150,7 +164,7 @@ const OV=__OV__;
 const FOV=__FOV__;
 const FX=__FX__;
 const DUR=__DUR__;
-const FIG=__FIG__, FIGS=__FIGS__, EX=__EX__;
+const FIG=__FIG__, FIGS=__FIGS__, EX=__EX__, HOT=__HOT__;
 const LAND='__MASK__';
 const DAYS=['Mo','Di','Mi','Do','Fr','Sa','So'], START=9, QH=2;
 const LV={l:{n:'Leicht',buf:30,dec:3,len:6,notes:1,count:1,re:1,mark:1,xh:1,d:'Viel Zeit, 4 Reiseziele. Zeugen sind markiert, das Notizbuch schreibt mit.'},
@@ -185,7 +199,8 @@ function newGame(){
   const ziele=route.slice(0,-1).map(()=>shuffle(others).slice(0,LC.dec));
   let t=0;for(let w=0;w<LEN;w++){let u=START;for(let i=0;i<LEN-1;i++){for(let q=0;q<3;q++)u=step(u,QH);if(i===w)u=step(u,1);u=step(u,hours(route[i],route[i+1]));}
     if(w===LEN-1)u=step(u,1);u=step(u,QH);u=step(u,QH);t=Math.max(t,u);}DEAD=LC.buf>10?Math.ceil((t+LC.buf)/6)*6:t+LC.buf;
-  S={route,ziele,i:0,decoy:null,t:START,seen:{},notes:[],profile:{},warrant:null,culprit:SUSPECTS[Math.floor(Math.random()*SUSPECTS.length)],fin:0,xs:{},items:route.slice(0,-1).map((r,n)=>({k:Math.floor(Math.random()*3),type:(LVL==='s'||!CITY[route[n+1]].cur||Math.random()<.5)?'ticket':'beleg',found:false})),over:false,started:false,busy:false,scene:null};
+  document.body.dataset.lv=LVL;
+  S={route,ziele,i:0,decoy:null,t:START,seen:{},notes:[],profile:{},warrant:null,culprit:SUSPECTS[Math.floor(Math.random()*SUSPECTS.length)],fin:0,xs:{},hs:{},items:route.slice(0,-1).map((r,n)=>({k:Math.floor(Math.random()*3),h:Math.floor(Math.random()*3),type:(LVL==='s'||!CITY[route[n+1]].cur||Math.random()<.5)?'ticket':'beleg',found:false})),over:false,started:false,busy:false,scene:null};
   ATTR.forEach(a=>S.profile[a[0]]='');lastNote=0;
   document.querySelectorAll('.stampbig,.card,.raid').forEach(x=>x.remove());
   const c=CITY[start],fall='Fall: '+c.start.fall;
@@ -198,8 +213,9 @@ function newGame(){
   render();
 }
 const cityNow=()=>CITY[S.route[S.i]], isFinal=()=>S.i===LEN-1;
+const gh=()=>LV[LVL].mark&&S.items[S.i]&&S.items[S.i].k===0&&!S.items[S.i].found&&!isFinal()?'\n\n(Hier liegt etwas am Boden.)':'';
 function begin(){S.started=true;$('titlecard').classList.add('gone');const c=cityNow();setPlace(c.orte[0].ort,c.name+', '+c.land);
-  say('Direktorin Halberg','Büro Meridian',c.start.text+'\n\nDer Tatort gehört Ihnen. Hören Sie sich in der Stadt um.',['h_brief_'+c.id,'h_begin']);render();}
+  say('Direktorin Halberg','Büro Meridian',c.start.text+'\n\nDer Tatort gehört Ihnen. Hören Sie sich in der Stadt um.'+gh(),['h_brief_'+c.id,'h_begin']);render();}
 function fmt(t){const d=Math.floor(t/24),h=Math.floor(t%24);return DAYS[d%7]+' '+String(h).padStart(2,'0')+':00';}
 function advance(h){const b=S.t;S.t+=h;const hr=S.t%24;let slept=false;if(hr>=23){S.t+=24-hr+7;slept=true;}else if(hr<7){S.t+=7-hr;slept=true;}return slept;}
 function matches(){return SUSPECTS.filter(s=>ATTR.every(a=>!S.profile[a[0]]||s[a[0]]===S.profile[a[0]]));}
@@ -208,9 +224,9 @@ function say(name,role,text,clips,pslug){
   const w=$('who');w.textContent=name;const sp=document.createElement('span');sp.textContent=role;w.append(sp);
   const f=$('face'),slug=pslug||(name==='Direktorin Halberg'?'halberg':'');
   if(f.dataset.who!==name){f.textContent='';f.dataset.who=name;
-    if(slug){const im=new Image();im.src='portraits/'+slug+'.webp';im.alt='Porträt: '+name+', '+role;f.append(im);}else f.textContent=initials(name);
+    if(slug){const im=new Image();im.src='portraits/'+slug+'.webp';im.alt='Porträt: '+name+', '+role;f.append(im);}else if(name==='Beobachtung')f.innerHTML='<svg viewBox="0 0 24 24" width="55%" height="55%" fill="none" stroke="#0d1320" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="M15.5 15.5L21 21"/></svg>';else f.textContent=initials(name);
     f.classList.remove('pop');void f.offsetWidth;f.classList.add('pop');}
-  S.spk=pslug||'';clearInterval(typing);stopAudio();const el=$('txt');
+  S.spk=pslug||'';$('dialog').classList.remove('idle');S.quiet=0;clearInterval(typing);stopAudio();const el=$('txt');
   clips=(clips||[]).filter(c=>c in DUR);
   const speak=voiceOn&&clips.length,secs=speak?clips.reduce((n,c)=>n+DUR[c],0):0;
   if(speak){aq=clips.slice();f.classList.add('talk');nextClip();}
@@ -231,14 +247,15 @@ function stageFig(){
   const want=S.started&&!S.decoy&&c&&c.id===cityNow().id?id:'';
   const base=want+'|'+camOn+'|'+S.i+'|'+LVL;
   if(base!==figKey){figKey=base;
-    document.querySelectorAll('.fig:not(.out),.item,.card').forEach(f=>{if(f.classList.contains('fig')){f.classList.add('out');setTimeout(()=>f.remove(),500);}else f.remove();});
+    document.querySelectorAll('.fig:not(.out),.item,.card,.hot').forEach(f=>{if(f.classList.contains('fig')){f.classList.add('out');setTimeout(()=>f.remove(),500);}else f.remove();});
     if(want){const o=c.orte[k],P=FIG[id]||{w:[66,5,58],t:'',e:[]},st=$('cam'+camOn).querySelector('.stg');
       const w=mkFig(o.p,P.w,0,P.t,'Mit '+o.zeuge+' sprechen, '+o.rolle,o.zeuge+', '+o.rolle+' am Schauplatz '+o.ort,()=>ask(k),'wit');
       if(LC.mark){const bub=document.createElement('i');bub.className='bub';bub.textContent='!';w.append(bub);}
       st.append(w);
       (P.e||[]).forEach(e=>{if(!EX[e[0]]||!FIGS.includes(e[0]))return;st.append(mkFig(e[0],[e[1],e[2],e[3]],e[4],P.t,'Mit '+EX[e[0]][0]+' sprechen',EX[e[0]][0]+' am Schauplatz '+o.ort,()=>askExtra(e[0]),'ext'));});
+      (HOT[id]||[]).forEach((h,n)=>{const b=document.createElement('button');b.type='button';b.className='hot'+(S.hs[id+n]?' seen':'');b.style.left=h[1]+'%';b.style.bottom=h[2]+'%';b.setAttribute('aria-label',h[0]+' ansehen');b._act=()=>look(id,n,b);b.onclick=e=>{if(!e||e.detail===0)look(id,n,b);};st.append(b);});
       const it=S.items&&S.items[S.i];
-      if(it&&it.k===k&&!it.found&&!isFinal()){const b=document.createElement('button');b.type='button';b.className='item';b.setAttribute('aria-label','Fundstück ansehen');
+      if(LC.mark&&it&&it.k===k&&!it.found&&!isFinal()){const b=document.createElement('button');b.type='button';b.className='item';b.setAttribute('aria-label','Fundstück ansehen');
         const x=P.w[0]+(P.w[0]>50?-24:24);b.style.left=x+'%';b.style.bottom=Math.max(2,P.w[1]-2)+'%';b._act=pick;b.onclick=e=>{if(!e||e.detail===0)pick();};st.append(b);}
     }
   }
@@ -247,7 +264,11 @@ function stageFig(){
 }
 function askExtra(slug){if(S.over||S.busy)return;const e=EX[slug],n=(S.xs[slug]=(S.xs[slug]||0)+1)%2,slept=advance(LV[LVL].xh);
   say(e[0],'Passant',e[2][n]+(slept?'\n\n(Danach haben Sie bis 7 Uhr geschlafen.)':''),['e_'+slug+'_'+n],slug);timeUp();render();}
-function pick(){if(S.over||S.busy)return;const it=S.items[S.i],y=S.route[S.i+1],c=cityNow();it.found=true;advance(1);
+function look(id,n,b){if(S.over||S.busy)return;const h=HOT[id][n],it=S.items[S.i],k=+id.slice(-1);
+  S.hs[id+n]=1;if(b)b.classList.add('seen');
+  if(!LV[LVL].mark&&it&&it.k===k&&!it.found&&!isFinal()&&it.h===n){pick(h[0]);return;}
+  say('Beobachtung',h[0],h[3]);}
+function pick(wo){if(S.over||S.busy)return;const it=S.items[S.i],y=S.route[S.i+1],c=cityNow();it.found=true;advance(1);
   document.querySelectorAll('.item').forEach(x=>x.remove());
   const card=document.createElement('button');card.type='button';card.className='card '+it.type;card.setAttribute('aria-label','Fundstück schließen');
   let txt;
@@ -255,21 +276,25 @@ function pick(){if(S.over||S.busy)return;const it=S.items[S.i],y=S.route[S.i+1],
   else{card.innerHTML='<small>WECHSELSTUBE · QUITTUNG</small><b>'+CITY[y].cur+'</b><span>Betrag bar ausgezahlt</span>';txt='Quittung einer Wechselstube, ausgezahlt in: '+CITY[y].cur+'.';}
   card.onclick=e=>{if(!e||e.detail===0)card.remove();};card._t=performance.now();$('scene').append(card);
   note(c.name,'Fundstück',txt);
-  say('Direktorin Halberg','per Funk','Gut gesehen. Das hat die gesuchte Person verloren.\n\nFundstück: '+txt,['h_item']);timeUp();render();}
+  say('Direktorin Halberg','per Funk','Gut gesehen. Das hat die gesuchte Person verloren.\n\nFundstück'+(typeof wo==='string'?' ('+wo+')':'')+': '+txt,['h_item']);timeUp();render();}
 function goTo(k){if(S.over||S.busy)return;const c=cityNow(),o=c.orte[k];if(S.scene===c.id+k){if(LV[LVL].mark)ask(k);return;}
   stopAudio();document.querySelectorAll('.card').forEach(x=>x.remove());setScene(c.id+k,o.ort,c.name+', '+c.land);
-  say('Direktorin Halberg','per Funk',LV[LVL].mark?o.zeuge+' ('+o.rolle+') ist hier. Sprechen Sie die Person an.':'Gesucht wird hier: '+o.rolle+'. Sehen Sie sich um und sprechen Sie die richtige Person an.');render();}
+  say('Direktorin Halberg','per Funk',LV[LVL].mark?o.zeuge+' ('+o.rolle+') ist hier. Sprechen Sie die Person an.'+(S.items[S.i]&&S.items[S.i].k===k&&!S.items[S.i].found&&!isFinal()?' Außerdem liegt hier etwas am Boden.':''):'Gesucht wird hier: '+o.rolle+'. Sehen Sie sich um und sprechen Sie die richtige Person an.');render();}
 setInterval(()=>{if(!S)return;const cam=$('cam'+camOn);let on=false;
   document.querySelectorAll('.fig:not(.out)').forEach(f=>{const t=$('face').classList.contains('talk')&&S.spk===f.dataset.p;f.classList.toggle('talk',t);
     if(t){on=true;if(!cam.classList.contains('zoom')){const r=cam.getBoundingClientRect(),q=f.getBoundingClientRect();cam.style.transformOrigin=((q.left+q.width/2-r.left)/r.width*100).toFixed(1)+'% '+((q.top+q.height*.3-r.top)/r.height*100).toFixed(1)+'%';}}});
-  document.querySelectorAll('.cam').forEach(x=>x.classList.toggle('zoom',on&&x===cam));},160);
+  document.querySelectorAll('.cam').forEach(x=>x.classList.toggle('zoom',on&&x===cam));
+  if($('face').classList.contains('talk')||!S.started||S.over)S.quiet=0;else{S.quiet=(S.quiet||0)+160;if(S.quiet>3500)$('dialog').classList.add('idle');}},160);
 {let pd=null;const sc=$('scene');
   sc.addEventListener('pointerdown',e=>{pd=[e.clientX,e.clientY,performance.now()];});
   sc.addEventListener('pointerup',e=>{if(!pd)return;const dx=e.clientX-pd[0],dy=e.clientY-pd[1],dt=performance.now()-pd[2];pd=null;if(dx*dx+dy*dy>400||dt>900||!S)return;
     const x=e.clientX,y=e.clientY,card=document.querySelector('.card');
     if(card){if(performance.now()-card._t>350)card.remove();return;}
-    const hit=[...document.querySelectorAll('.item,.fig:not(.out)')].filter(el=>!el.disabled&&el._act).map(el=>{const r=el.getBoundingClientRect(),it=el.classList.contains('item'),m=it?14:4;return {el,ok:x>=r.left-m&&x<=r.right+m&&y>=r.top-m&&y<=r.bottom+m,z:it?999:(+el.style.zIndex||0)};}).filter(o=>o.ok).sort((a,b)=>b.z-a.z)[0];
-    if(hit)hit.el._act();});
+    const hit=[...document.querySelectorAll('.item,.fig:not(.out),.hot')].filter(el=>!el.disabled&&el._act).map(el=>{const r=el.getBoundingClientRect(),c=el.classList;
+      if(c.contains('hot')){const d=Math.hypot(x-(r.left+r.width/2),y-(r.top+r.height/2)),rad=Math.max(r.width/2,22);return {el,ok:d<=rad,z:d<=rad*.5?500:-1};}
+      if(c.contains('item'))return {el,ok:x>=r.left-14&&x<=r.right+14&&y>=r.top-14&&y<=r.bottom+14,z:999};
+      const ix=r.width*.1;return {el,ok:x>=r.left+ix&&x<=r.right-ix&&y>=r.top-4&&y<=r.bottom+4,z:+el.style.zIndex||0};}).filter(o=>o.ok).sort((a,b)=>b.z-a.z)[0];
+    if(hit)hit.el._act();else{$('dialog').classList.remove('idle');S.quiet=0;}});
   sc.addEventListener('pointercancel',()=>{pd=null;});}
 $('scene').addEventListener('pointermove',e=>{const r=$('scene').getBoundingClientRect();$('scene').style.setProperty('--px',((e.clientX-r.left)/r.width*2-1).toFixed(3));});
 function note(stadt,zeuge,text){if(!LV[LVL].notes)return;S.notes.unshift({stadt,zeuge,text});}
@@ -321,7 +346,7 @@ function travel(to,h,correct){
     if(S.decoy){S.decoy=null;setScene(c0.id+'0',c0.orte[0].ort,c0.name+', '+c0.land);say('Direktorin Halberg','per Funk','Zurück am letzten sicheren Punkt der Spur. Sehen Sie sich die Hinweise noch einmal genau an.',['h_back']);}
     else if(correct){S.i++;const c=cityNow();setScene(c.id+'0',c.orte[0].ort,c.name+', '+c.land);
       if(isFinal())say('Direktorin Halberg','per Funk','Hier endet die Spur. Hören Sie sich um, aber greifen Sie nur mit gültigem Haftbefehl zu.',['h_final']);
-      else say('Direktorin Halberg','per Funk','Gute Arbeit. In '+c.name+' wurde die Person gesehen. Hören Sie sich um.'+(slept?'\n\n(Sie sind erst um 7 Uhr wieder einsatzbereit.)':''),['h_arr_'+c.id]);}
+      else say('Direktorin Halberg','per Funk','Gute Arbeit. In '+c.name+' wurde die Person gesehen. Hören Sie sich um.'+gh()+(slept?'\n\n(Sie sind erst um 7 Uhr wieder einsatzbereit.)':''),['h_arr_'+c.id]);}
     else{S.decoy=to;setScene('flughafen','Flughafen',CITY[to].name+', '+CITY[to].land);say('Direktorin Halberg','per Funk','Falsche Fährte. Von der gesuchten Person haben wir hier keine einzige Meldung.',['h_decoy']);}
     }finally{timeUp();render();}
   };
@@ -387,7 +412,7 @@ if(!calm)requestAnimationFrame(fxLoop);
 '''
 FOV['lima'][2]='Die Person, die Sie suchen, kann nicht weit sein. Beeilen Sie sich.' if 'f_lima_2' in dur and False else 'Vor zehn Minuten wollte jemand hier etwas Wertvolles schätzen lassen. Die Person kann nicht weit sein.'
 J=lambda o:json.dumps(o,ensure_ascii=False,separators=(',',':'))
-js=js.replace('__CLUE__',J(D['CLUE'])).replace('__FINAL__',J(D['FINAL'])).replace('__SUS__',sus).replace('__CITY__',J(cities)).replace('__OV__',J(OV)).replace('__FOV__',J(FOV)).replace('__FX__',J(FX)).replace('__DUR__',J(dur)).replace('__FIG__',J(FIG)).replace('__FIGS__',J(FIGS)).replace('__EX__',J(EX)).replace('__MASK__',mask).replace('__MID__',mid)
+js=js.replace('__CLUE__',J(D['CLUE'])).replace('__FINAL__',J(D['FINAL'])).replace('__SUS__',sus).replace('__CITY__',J(cities)).replace('__OV__',J(OV)).replace('__FOV__',J(FOV)).replace('__FX__',J(FX)).replace('__DUR__',J(dur)).replace('__FIG__',J(FIG)).replace('__FIGS__',J(FIGS)).replace('__EX__',J(EX)).replace('__HOT__',J(HOT)).replace('__MASK__',mask).replace('__MID__',mid)
 head=head.replace('<h1>Akte Meridian<small>Fall 1 · Das Salzfass von Wien</small></h1>','<h1>Akte Meridian<small>Fall</small></h1>').replace('Frist Sa 18:00 · noch <b id="remain">129 h</b>','Frist <b id="frist">Sa 18:00</b> · noch <b id="remain">129 h</b>').replace('<em>Fall 1 · Das Salzfass von Wien</em>','<em>Fall</em>')
 head=head.replace('<div class="left">','<nav class="tabs" id="tabs" aria-label="Bereiche"><button type="button" data-t="q" aria-pressed="true">Befragen</button><button type="button" data-t="r" aria-pressed="false">Reisen</button><button type="button" data-t="p" aria-pressed="false">Profil</button><button type="button" data-t="n" id="tab-n" aria-pressed="false">Notizen</button></nav>\n    <div class="left">')
 head=head.replace('<section>\n        <h2>Täterprofil</h2>','<section id="sec-p">\n        <h2>Täterprofil</h2>').replace('<section>\n        <h2>Kartei: Der Zirkel</h2>','<section id="sec-k">\n        <h2>Kartei: Der Zirkel</h2>').replace('<section>\n        <h2>Notizbuch</h2>','<section id="sec-n">\n        <h2>Notizbuch</h2>')
