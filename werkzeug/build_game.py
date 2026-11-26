@@ -23,6 +23,7 @@ FOV['lima'][2]='__GEN__'
 
 COMPACT=r"""
 .tabs{display:none}
+#map{object-fit:contain;z-index:4}
 /* Handy und kleine Fenster: alles auf einem Bildschirm, kein Seiten-Scrollen */
 @media (max-width:900px),(max-height:520px){
   html,body{height:100%;overflow:hidden}
@@ -37,6 +38,7 @@ COMPACT=r"""
   .left{display:contents}
   .scene{grid-area:scene;aspect-ratio:auto;height:100%;min-height:0;border-radius:8px}
   .dialog{grid-area:scene;align-self:end;z-index:3;margin:6px;min-height:0;max-height:62%;overflow:auto;padding:8px;gap:8px;background:rgba(13,19,32,.88)}
+  body.flying .dialog,body.flying .place{visibility:hidden}
   .face{flex-basis:52px;height:52px;border-radius:8px}
   .who{font-size:13px;margin:0}.who span{font-size:12px}
   .txt{font-size:13.5px;line-height:1.35}
@@ -71,6 +73,7 @@ COMPACT=r"""
   .scene{aspect-ratio:16/9;height:auto}
   .dialog{grid-area:dialog;margin:0;max-height:26vh;align-self:auto;background:var(--panel)}
   .place{top:auto;bottom:8px}
+  body.flying .dialog{visibility:visible}
 }
 """
 FX={'wien0':'rain','tokio0':'rain','lima1':'fog','tokio1':'fog','istanbul0':'dust','kairo0':'dust','kairo2':'dust','mumbai2':'dust','wien2':'dust','newyork0':'rain','reykjavik2':'fog','peking2':'fog','marrakesch1':'dust','nairobi0':'dust','rio2':'dust','peking1':'dust','marrakesch0':'fog'}
@@ -257,5 +260,15 @@ head=head.replace('<section>\n        <h2>Täterprofil</h2>','<section id="sec-p
 assert 'id="sec-p"' in head and 'id="sec-k"' in head and 'id="sec-n"' in head and 'id="tabs"' in head
 head=head.replace('<body>','<body data-tab="q">').replace('</style>',COMPACT+'</style>')
 assert 'id="frist"' in head
+
+for _a,_b in [
+ ("  if(calm||!a||!b){done();return;}\n  const cv=$('map'),g=cv.getContext('2d');cv.hidden=false;",
+  "  if(!a||!b){done();return;}\n  const cv=$('map'),g=cv.getContext('2d');cv.hidden=false;document.body.classList.add('flying');"),
+ ("const t0=performance.now(),dur=2100;","const dur=calm?1:2100,t0=performance.now();"),
+ ("if(k<1)requestAnimationFrame(frame);else setTimeout(()=>{cv.hidden=true;done();},350);",
+  "if(k<1)requestAnimationFrame(frame);else setTimeout(()=>{cv.hidden=true;document.body.classList.remove('flying');done();},calm?1600:450);"),
+]:
+    assert _a in js,_a
+    js=js.replace(_a,_b)
 html=head+'<script>'+js+'</script>\n</body>\n</html>\n'
 open('../index.html','w').write(html);open('/tmp/g.js','w').write(js);print('ok',len(html))

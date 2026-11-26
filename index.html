@@ -103,6 +103,7 @@ h1 small{display:block;font-family:var(--body);font-size:13px;color:var(--muted)
 @media (prefers-reduced-motion:reduce){.mv,.pulse,.face img,.face,.place,.stampbig,.stamp,.notes li{animation:none!important}.cam,.bar i{transition:none}}
 
 .tabs{display:none}
+#map{object-fit:contain;z-index:4}
 /* Handy und kleine Fenster: alles auf einem Bildschirm, kein Seiten-Scrollen */
 @media (max-width:900px),(max-height:520px){
   html,body{height:100%;overflow:hidden}
@@ -117,6 +118,7 @@ h1 small{display:block;font-family:var(--body);font-size:13px;color:var(--muted)
   .left{display:contents}
   .scene{grid-area:scene;aspect-ratio:auto;height:100%;min-height:0;border-radius:8px}
   .dialog{grid-area:scene;align-self:end;z-index:3;margin:6px;min-height:0;max-height:62%;overflow:auto;padding:8px;gap:8px;background:rgba(13,19,32,.88)}
+  body.flying .dialog,body.flying .place{visibility:hidden}
   .face{flex-basis:52px;height:52px;border-radius:8px}
   .who{font-size:13px;margin:0}.who span{font-size:12px}
   .txt{font-size:13.5px;line-height:1.35}
@@ -151,6 +153,7 @@ h1 small{display:block;font-family:var(--body);font-size:13px;color:var(--muted)
   .scene{aspect-ratio:16/9;height:auto}
   .dialog{grid-area:dialog;margin:0;max-height:26vh;align-self:auto;background:var(--panel)}
   .place{top:auto;bottom:8px}
+  body.flying .dialog{visibility:visible}
 }
 </style>
 </head>
@@ -261,11 +264,11 @@ function land(x,y){const i=y*MW+x;return (parseInt(LAND[i>>2],16)>>(3-(i&3)))&1;
 function proj(lon,lat){return [(lon+180)/360*960,30+(90-lat)/180*480];}
 function fly(from,to,h,done){
   const a=CITY[from].co,b=CITY[to].co;
-  if(calm||!a||!b){done();return;}
-  const cv=$('map'),g=cv.getContext('2d');cv.hidden=false;
+  if(!a||!b){done();return;}
+  const cv=$('map'),g=cv.getContext('2d');cv.hidden=false;document.body.classList.add('flying');
   let d=b[0]-a[0];if(d>180)d-=360;if(d<-180)d+=360;
   const pt=s=>{let lon=a[0]+d*s;if(lon>180)lon-=360;if(lon<-180)lon+=360;const p=proj(lon,a[1]+(b[1]-a[1])*s);p[1]-=Math.sin(Math.PI*s)*Math.min(70,Math.abs(d)*.6+18);return p;};
-  const t0=performance.now(),dur=2100;
+  const dur=calm?1:2100,t0=performance.now();
   function frame(t){
     const k=Math.min(1,(t-t0)/dur),s=k<.5?2*k*k:1-Math.pow(-2*k+2,2)/2;
     g.fillStyle='#0b101b';g.fillRect(0,0,960,540);
@@ -276,7 +279,7 @@ function fly(from,to,h,done){
     g.save();g.translate(p[0],p[1]);g.rotate(ang);g.fillStyle='#fff';g.beginPath();g.moveTo(13,0);g.lineTo(-9,-8);g.lineTo(-4,0);g.lineTo(-9,8);g.closePath();g.fill();g.restore();
     g.fillStyle='#f2b455';g.font='700 30px "Playfair Display",serif';g.textAlign='left';g.fillText('Flug nach '+CITY[to].name,34,58);
     g.fillStyle='#97a4ba';g.font='400 19px "IBM Plex Sans",sans-serif';g.fillText(Math.round(h*s)+' von '+h+' Stunden',36,86);
-    if(k<1)requestAnimationFrame(frame);else setTimeout(()=>{cv.hidden=true;done();},350);
+    if(k<1)requestAnimationFrame(frame);else setTimeout(()=>{cv.hidden=true;document.body.classList.remove('flying');done();},calm?1600:450);
   }
   requestAnimationFrame(frame);
 }
