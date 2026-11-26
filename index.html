@@ -155,9 +155,21 @@ body[data-lv="s"] .hot::after{display:none}
 .item{width:8%;animation:glint 1.3s ease-in-out infinite,hopi 1.3s ease-in-out infinite}
 @keyframes hopi{50%{margin-bottom:1.2%}}
 @media (prefers-reduced-motion:reduce){.hot::after{animation:none!important;opacity:.8}}
-#hubchip{display:none}
-body:not([data-mode="case"]) #hubchip{display:inline-flex}
-body:not([data-mode="case"]) .hud .chip:not(#hubchip),body:not([data-mode="case"]) .casebtn,body:not([data-mode="case"]) .akte,body:not([data-mode="case"]) .tabs,body:not([data-mode="case"]) .bar{display:none!important}
+header{display:flex;flex-wrap:nowrap;align-items:center;gap:6px 14px}
+header h1{flex:0 0 auto}
+.icons{display:flex;gap:6px;flex:0 0 auto}
+.ib{width:36px;height:36px;border-radius:50%;border:1px solid var(--line);background:transparent;color:#c9d3e6;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;padding:0;transition:border-color .15s,color .15s}
+.ib svg{width:18px;height:18px}.ib:hover,.ib:focus-visible{border-color:var(--amber);color:var(--amber)}
+.ib[aria-pressed="true"]{border-color:var(--teal);color:var(--teal)}
+.ib[aria-pressed="true"] .x,.ib[aria-pressed="false"] .w{display:none}
+.timerow,#hubchip{flex:1 1 auto;min-width:0;display:flex;justify-content:flex-end;align-items:baseline;gap:18px;font-size:14px;color:var(--text);white-space:nowrap}
+.timerow b,#hubchip b{color:var(--amber);font-weight:600}
+.timerow .chip{border:0;background:none;padding:0;border-radius:6px;font-size:inherit}
+.timerow .tmid{color:var(--muted);font-size:12.5px}.timerow .tmid b{color:var(--muted);font-weight:400}
+.tleft.warn b{color:var(--red)}
+#hubchip{display:none;color:var(--muted);font-size:13px}
+body:not([data-mode="case"]) #hubchip{display:flex}
+body:not([data-mode="case"]) .timerow,body:not([data-mode="case"]) .casebtn,body:not([data-mode="case"]) .akte,body:not([data-mode="case"]) .tabs,body:not([data-mode="case"]) .bar{display:none!important}
 body:not([data-mode="case"]) .main{grid-template-columns:minmax(0,1fr)}
 body:not([data-mode="case"]) .actions{display:block!important}
 body:not([data-mode="case"]) .box{display:flex!important}
@@ -237,9 +249,8 @@ body[data-mode="title"] .actions,body[data-mode="title"] .dialog{visibility:hidd
   .scene{grid-area:scene;aspect-ratio:auto;height:auto;align-self:stretch;min-height:0;border-radius:8px}
   .dialog{grid-area:scene;align-self:end;z-index:3;margin:6px;min-height:0;max-height:62%;overflow:auto;padding:8px;gap:8px;background:rgba(13,19,32,.88)}
   body.flying .dialog,body.flying .place{visibility:hidden}
-  .gear .lg{display:none}.gear .sm{display:inline;font-size:15px;line-height:1}
-  h1{min-width:0;overflow:hidden;text-overflow:ellipsis;flex:0 1 auto}
-  .hud{flex:1 0 auto}
+  .ib{width:32px;height:32px}.ib svg{width:16px;height:16px}
+  .timerow,#hubchip{font-size:13px;gap:12px}
   .dialog{pointer-events:none;transition:opacity .5s}
   .dialog.idle{opacity:0}
   .item{width:9%}
@@ -278,7 +289,9 @@ body[data-mode="title"] .actions,body[data-mode="title"] .dialog{visibility:hidd
   .scene{aspect-ratio:auto;height:calc((100vw - 16px)*.5625);max-height:40vh;align-self:start}
   .dialog{grid-area:dialog;margin:0;max-height:26vh;align-self:auto;background:var(--panel)}
   .place{top:auto;bottom:8px}
-  .hud{flex-wrap:wrap;justify-content:flex-start;flex:1 1 100%}
+  header{flex-wrap:wrap}
+  header h1{flex:1 1 auto}
+  .timerow,#hubchip{order:3;flex:1 1 100%;justify-content:space-between;gap:8px}
   body.flying .dialog{visibility:visible}
   .dialog{pointer-events:auto}.dialog.idle{opacity:1}
   .card{top:42%}
@@ -727,13 +740,19 @@ function badge(){const n=solved(),nx=RANKS.find(r=>r[0]>n),d=el('div','lst');d.a
 function settings(){const d=el('div','lst'),g=el('div','lv');g.setAttribute('role','group');g.setAttribute('aria-label','Schwierigkeit');const info=el('p','hint',LV[LVL].d);
   Object.keys(LV).forEach(k=>{const x=el('button','',LV[k].n);x.type='button';x.setAttribute('aria-pressed',k===(META.lvl||LVL));x.onclick=()=>{META.lvl=k;save();if(MODE!=='case')LVL=k;g.querySelectorAll('button').forEach(b=>b.setAttribute('aria-pressed',b===x));info.textContent=LV[k].d+(MODE==='case'?' Gilt ab dem nächsten Fall.':'');};g.append(x);});
   d.append(el('h3','','Schwierigkeit'),g,info,el('h3','','Spielstand'));const r=el('button','act','Spielstand zurücksetzen');r.type='button';let arm=false;r.onclick=()=>{if(!arm){arm=true;r.textContent='Wirklich alles löschen? Noch einmal tippen.';return;}META={cases:[],arrested:[],money:0,intro:0,lvl:LVL,neu:''};save();closeSheet();office();};d.append(r);sheet('Einstellungen',d);}
-function renderHub(){const A=$('actions');A.innerHTML='';const hc=$('hubchip');if(hc)hc.textContent=rank(solved())+' · '+META.arrested.length+'/'+ALLSUS.length+' gefasst · Prämien '+META.money.toLocaleString('de-DE');
+function renderHub(){const A=$('actions');A.innerHTML='';const hc=$('hubchip');if(hc){hc.textContent='';hc.append(el('span','',rank(solved())),el('span','',META.arrested.length+' von '+ALLSUS.length+' gefasst'),el('span','','Prämien '+META.money.toLocaleString('de-DE')));}
   if(MODE==='title')return;
   if(MODE==='cell'){const b=box('Zellentrakt');b.append(btn('Zurück ins Büro','',()=>office()));A.append(b);return;}
   const b=box('Büro Meridian');if(active())b.append(btn('Zurück zum Fall',cityNow().name,resume,'here'));if(RING)b.append(btn('Telefon abnehmen','es klingelt',()=>hub('tel'),'here'));
   b.append(btn('Pinnwand','',()=>hub('board')),btn('Aktenschrank',META.cases.length?META.cases.length+' Akten':'',()=>hub('cab')),btn('Zellentrakt',META.arrested.length+' von '+ALLSUS.length+(META.neu?' · neu':''),()=>hub('cell')),btn('Dienstmarke',rank(solved()),()=>hub('badge')));A.append(b);}
-function boot(){const hud=document.querySelector('.hud'),hc=el('span','chip');hc.id='hubchip';hud.prepend(hc);
-  const pb=el('button','tog casebtn','Pinnwand');pb.type='button';pb.onclick=board;const ob=el('button','tog casebtn','Büro');ob.type='button';ob.onclick=()=>{if(active())office();};hud.append(ob);const gb=el('button','tog gear');gb.type='button';gb.setAttribute('aria-label','Einstellungen');gb.append(el('span','lg','Einstellungen'),el('span','sm','⚙'));gb.querySelector('.sm').setAttribute('aria-hidden','true');gb.onclick=settings;hud.append(pb,gb);
+function boot(){const hd=document.querySelector('header'),hud=document.querySelector('.hud');
+  const IC={ton:'<path d="M4 9v6h4l5 4V5L8 9H4z"/><path class="w" d="M16.5 9a4 4 0 010 6M19 6.5a8 8 0 010 11"/><path class="x" d="M17 9l5 6M22 9l-5 6"/>',buero:'<path d="M3 21h18M5 21V5l7-2v18M12 9h7v12M8 8h1M8 12h1M8 16h1M15 13h1M15 17h1"/>',pin:'<path d="M9 4h6l-1 6 3 3H7l3-3-1-6zM12 13v7"/>',gear:'<circle cx="12" cy="12" r="3.2"/><path d="M12 2.5v3M12 18.5v3M2.5 12h3M18.5 12h3M5.3 5.3l2.1 2.1M16.6 16.6l2.1 2.1M5.3 18.7l2.1-2.1M16.6 7.4l2.1-2.1"/>'};
+  const ib=(k,label,fn,cls)=>{const b=el('button','ib '+(cls||''));b.type='button';b.setAttribute('aria-label',label);b.title=label;b.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'+IC[k]+'</svg>';b.onclick=fn;return b;};
+  const icons=el('div','icons'),tr=el('div','timerow'),hc=el('div','');hc.id='hubchip';
+  tr.innerHTML='<span class="chip tnow">Jetzt <b id="clock"></b></span><span class="tmid">Frist <b id="frist"></b></span><span class="tleft" id="leftchip">noch <b id="remain"></b></span>';
+  const vb=ib('ton','Stimmen an oder aus',()=>{voiceOn=!voiceOn;vb.setAttribute('aria-pressed',voiceOn);if(!voiceOn){stopAudio();$('face').classList.remove('talk');}});vb.id='voice';vb.setAttribute('aria-pressed','true');
+  icons.append(vb,ib('buero','Ins Büro',()=>{if(active())office();},'casebtn'),ib('pin','Pinnwand',board,'casebtn'),ib('gear','Einstellungen',settings));
+  if(hud)hud.remove();hd.append(tr,hc,icons);
   const sb=el('button','act big startbtn','Spiel starten');sb.type='button';sb.onclick=()=>{try{AC=AC||new (window.AudioContext||window.webkitAudioContext)();}catch(e){}sb.remove();office();};$('titlecard').append(sb);
   newGame();MODE='title';document.body.dataset.mode='title';document.querySelector('h1 small').textContent='Büro Meridian';document.querySelector('#titlecard em').textContent='Ein Fall für das Büro Meridian';setScene('buero','','');render();
   setInterval(()=>{tk++;if(MODE==='office'&&RING&&!$('face').classList.contains('talk')&&!$('sheet')&&tk%5===0)ring();},1000);}
