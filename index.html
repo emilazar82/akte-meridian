@@ -163,7 +163,8 @@ body:not([data-mode="case"]) .actions{display:block!important}
 body:not([data-mode="case"]) .box{display:flex!important}
 .startbtn{margin-top:18px;min-width:min(260px,70%);justify-content:center;pointer-events:auto}
 body[data-mode="title"] .actions,body[data-mode="title"] .dialog{visibility:hidden}
-.hud .tog{white-space:nowrap}
+.hud .tog,.hud .chip{white-space:nowrap}
+.gear .sm{display:none}
 .hot.hub{width:15%;z-index:3}
 .hot.hub span{position:absolute;left:50%;top:100%;transform:translate(-50%,-30%);white-space:nowrap;font:600 clamp(10px,1.5cqw,15px)/1 var(--body);color:#fff3c4;background:rgba(8,12,20,.72);padding:3px 7px;border-radius:99px;pointer-events:none}
 .hot.hub::after{width:12px;height:12px;margin:-6px}
@@ -231,6 +232,9 @@ body[data-mode="title"] .actions,body[data-mode="title"] .dialog{visibility:hidd
   .scene{grid-area:scene;aspect-ratio:auto;height:auto;align-self:stretch;min-height:0;border-radius:8px}
   .dialog{grid-area:scene;align-self:end;z-index:3;margin:6px;min-height:0;max-height:62%;overflow:auto;padding:8px;gap:8px;background:rgba(13,19,32,.88)}
   body.flying .dialog,body.flying .place{visibility:hidden}
+  .gear .lg{display:none}.gear .sm{display:inline;font-size:15px;line-height:1}
+  h1{min-width:0;overflow:hidden;text-overflow:ellipsis;flex:0 1 auto}
+  .hud{flex:1 0 auto}
   .dialog{pointer-events:none;transition:opacity .5s}
   .dialog.idle{opacity:0}
   .item{width:9%}
@@ -269,6 +273,7 @@ body[data-mode="title"] .actions,body[data-mode="title"] .dialog{visibility:hidd
   .scene{aspect-ratio:auto;height:calc((100vw - 16px)*.5625);max-height:40vh;align-self:start}
   .dialog{grid-area:dialog;margin:0;max-height:26vh;align-self:auto;background:var(--panel)}
   .place{top:auto;bottom:8px}
+  .hud{flex-wrap:wrap;justify-content:flex-start;flex:1 1 100%}
   body.flying .dialog{visibility:visible}
   .dialog{pointer-events:auto}.dialog.idle{opacity:1}
   .card{top:42%}
@@ -712,7 +717,7 @@ function renderHub(){const A=$('actions');A.innerHTML='';const hc=$('hubchip');i
   const b=box('Büro Meridian');if(active())b.append(btn('Zurück zum Fall',cityNow().name,resume,'here'));if(RING)b.append(btn('Telefon abnehmen','es klingelt',()=>hub('tel'),'here'));
   b.append(btn('Pinnwand','',()=>hub('board')),btn('Aktenschrank',META.cases.length?META.cases.length+' Akten':'',()=>hub('cab')),btn('Zellentrakt',META.arrested.length+' von '+ALLSUS.length+(META.neu?' · neu':''),()=>hub('cell')),btn('Dienstmarke',rank(solved()),()=>hub('badge')));A.append(b);}
 function boot(){const hud=document.querySelector('.hud'),hc=el('span','chip');hc.id='hubchip';hud.prepend(hc);
-  const pb=el('button','tog casebtn','Pinnwand');pb.type='button';pb.onclick=board;const ob=el('button','tog casebtn','Büro');ob.type='button';ob.onclick=()=>{if(active())office();};hud.append(ob);const gb=el('button','tog','Einstellungen');gb.type='button';gb.onclick=settings;hud.append(pb,gb);
+  const pb=el('button','tog casebtn','Pinnwand');pb.type='button';pb.onclick=board;const ob=el('button','tog casebtn','Büro');ob.type='button';ob.onclick=()=>{if(active())office();};hud.append(ob);const gb=el('button','tog gear');gb.type='button';gb.setAttribute('aria-label','Einstellungen');gb.append(el('span','lg','Einstellungen'),el('span','sm','⚙'));gb.querySelector('.sm').setAttribute('aria-hidden','true');gb.onclick=settings;hud.append(pb,gb);
   const sb=el('button','act big startbtn','Spiel starten');sb.type='button';sb.onclick=()=>{try{AC=AC||new (window.AudioContext||window.webkitAudioContext)();}catch(e){}sb.remove();office();};$('titlecard').append(sb);
   newGame();MODE='title';document.body.dataset.mode='title';document.querySelector('h1 small').textContent='Büro Meridian';document.querySelector('#titlecard em').textContent='Ein Fall für das Büro Meridian';setScene('buero','','');render();
   setInterval(()=>{tk++;if(MODE==='office'&&RING&&!$('face').classList.contains('talk')&&!$('sheet')&&tk%5===0)ring();},1000);}

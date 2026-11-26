@@ -89,7 +89,8 @@ body:not([data-mode="case"]) .actions{display:block!important}
 body:not([data-mode="case"]) .box{display:flex!important}
 .startbtn{margin-top:18px;min-width:min(260px,70%);justify-content:center;pointer-events:auto}
 body[data-mode="title"] .actions,body[data-mode="title"] .dialog{visibility:hidden}
-.hud .tog{white-space:nowrap}
+.hud .tog,.hud .chip{white-space:nowrap}
+.gear .sm{display:none}
 .hot.hub{width:15%;z-index:3}
 .hot.hub span{position:absolute;left:50%;top:100%;transform:translate(-50%,-30%);white-space:nowrap;font:600 clamp(10px,1.5cqw,15px)/1 var(--body);color:#fff3c4;background:rgba(8,12,20,.72);padding:3px 7px;border-radius:99px;pointer-events:none}
 .hot.hub::after{width:12px;height:12px;margin:-6px}
@@ -157,6 +158,9 @@ body[data-mode="title"] .actions,body[data-mode="title"] .dialog{visibility:hidd
   .scene{grid-area:scene;aspect-ratio:auto;height:auto;align-self:stretch;min-height:0;border-radius:8px}
   .dialog{grid-area:scene;align-self:end;z-index:3;margin:6px;min-height:0;max-height:62%;overflow:auto;padding:8px;gap:8px;background:rgba(13,19,32,.88)}
   body.flying .dialog,body.flying .place{visibility:hidden}
+  .gear .lg{display:none}.gear .sm{display:inline;font-size:15px;line-height:1}
+  h1{min-width:0;overflow:hidden;text-overflow:ellipsis;flex:0 1 auto}
+  .hud{flex:1 0 auto}
   .dialog{pointer-events:none;transition:opacity .5s}
   .dialog.idle{opacity:0}
   .item{width:9%}
@@ -195,6 +199,7 @@ body[data-mode="title"] .actions,body[data-mode="title"] .dialog{visibility:hidd
   .scene{aspect-ratio:auto;height:calc((100vw - 16px)*.5625);max-height:40vh;align-self:start}
   .dialog{grid-area:dialog;margin:0;max-height:26vh;align-self:auto;background:var(--panel)}
   .place{top:auto;bottom:8px}
+  .hud{flex-wrap:wrap;justify-content:flex-start;flex:1 1 100%}
   body.flying .dialog{visibility:visible}
   .dialog{pointer-events:auto}.dialog.idle{opacity:1}
   .card{top:42%}
