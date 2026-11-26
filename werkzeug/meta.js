@@ -99,8 +99,8 @@ function boot(){const hd=document.querySelector('header'),hud=document.querySele
   const sb=el('button','act big startbtn','Spiel starten');sb.type='button';sb.onclick=()=>{try{AC=AC||new (window.AudioContext||window.webkitAudioContext)();}catch(e){}sb.remove();office();};$('titlecard').append(sb);
   newGame();MODE='title';document.body.dataset.mode='title';document.querySelector('h1 small').textContent='Büro Meridian';document.querySelector('#titlecard em').textContent='Ein Fall für das Büro Meridian';setScene('buero','','');render();
   setInterval(()=>{tk++;if(MODE==='office'&&RING&&!$('face').classList.contains('talk')&&!$('sheet')&&tk%5===0)ring();},1000);}
-const CHASE=false;
-function chase(done){if(!CHASE||window.SKIPCHASE){done();return;}
+function chase(done){const c=cityNow();if(window.SKIPCHASE||!PJAGD[c.id]){done();return;}panoChase(c.id,done);}
+function chaseAlt(done){
   S.busy=true;S.pend=null;render();
   const sc=$('scene'),ov=el('div','chase'),cv=document.createElement('canvas'),hint=el('div','chint'),skip=el('button','cskip','Überspringen · 2 h');skip.type='button';
   cv.setAttribute('role','img');cv.setAttribute('aria-label','Verfolgungsjagd: Die Ermittlerin rennt der flüchtenden Person hinterher');

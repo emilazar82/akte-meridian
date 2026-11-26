@@ -185,6 +185,14 @@ body[data-mode="title"] .actions,body[data-mode="title"] .dialog{visibility:hidd
 .lv{display:flex;gap:6px}.lv button{flex:1;min-width:0;background:transparent;color:var(--muted);border:1px solid var(--line);border-radius:8px;padding:8px 4px;font:inherit;font-size:14px;min-height:38px;cursor:pointer}.lv button[aria-pressed="true"]{background:var(--amber);color:#1c1405;border-color:var(--amber);font-weight:600}
 #map{object-fit:contain;z-index:4}
 [hidden]{display:none!important}
+.pano{position:absolute;inset:0;width:100%;height:100%;z-index:5;display:block;touch-action:none;cursor:pointer}
+.pbtn{--ps:clamp(38px,8.5vmin,58px);position:absolute;bottom:8px;z-index:8;width:var(--ps);height:var(--ps);padding:0;border-radius:50%;border:2px solid rgba(242,180,85,.8);background:rgba(13,19,32,.72);color:var(--amber);font:inherit;font-size:calc(var(--ps)*.4);line-height:1;cursor:pointer;touch-action:none;user-select:none;-webkit-user-select:none;-webkit-tap-highlight-color:transparent}
+.pbtn.on{background:var(--amber);color:#1c1405}
+.pbtn.l{left:8px}.pbtn.r{left:calc(16px + var(--ps))}.pbtn.j{right:8px}
+.pbtn.a{right:calc(16px + var(--ps));width:auto;padding:0 14px;border-radius:99px;border-color:#58c7bd;color:#58c7bd;font-size:13px;font-weight:600;touch-action:manipulation}
+body.flying .pano,body.flying .pbtn{display:none}
+body.pano .place{z-index:7;top:8px!important;bottom:auto!important}body.pano .vig{display:none}
+.stampbig,.card,.raid{z-index:9}
 .act{min-width:0}.act>span{min-width:0;overflow-wrap:anywhere}.act small{white-space:normal;min-width:0;text-align:right;overflow-wrap:anywhere}
 .cm{display:flex;flex-direction:column;gap:8px}
 .cmm{position:relative;width:min(100%,calc((100dvh - 200px)*1.7778));min-width:240px;aspect-ratio:16/9;margin:0 auto;border-radius:8px;overflow:hidden;box-shadow:0 6px 18px rgba(0,0,0,.5)}
@@ -230,6 +238,7 @@ body.flying .exit,.exit:disabled{display:none}
   .dialog.idle{opacity:0}
   body.flying .dialog,body.flying .place{visibility:hidden}
   .place{top:12px;bottom:auto}
+  body.pano .dialog{align-self:start;margin-top:64px;max-height:40%}
   .actions{grid-area:actions;min-height:0;max-height:34vh;overflow:hidden;display:grid;grid-template-columns:minmax(0,3fr) minmax(0,1.2fr);gap:12px}
   body:not([data-mode="case"]) .actions{max-height:30vh}
   .box{padding:10px 12px}
@@ -253,6 +262,7 @@ body.flying .exit,.exit:disabled{display:none}
   .scene{grid-area:scene;aspect-ratio:auto;height:auto;align-self:stretch;min-height:0;border-radius:8px}
   .dialog{grid-area:scene;align-self:end;z-index:3;margin:6px;min-height:0;max-height:62%;overflow:hidden;padding:8px;gap:8px;background:rgba(13,19,32,.88)}
   body.flying .dialog,body.flying .place{visibility:hidden}
+  body.pano .dialog{align-self:start;margin-top:44px;max-height:46%}
   .ib{width:32px;height:32px}.ib svg{width:16px;height:16px}
   .wm canvas{max-height:38vh;width:auto;max-width:100%;margin:0 auto}
   .timerow,#hubchip{font-size:13px;gap:12px}
@@ -294,7 +304,7 @@ body.flying .exit,.exit:disabled{display:none}
   .wm canvas{max-height:34vh}
   .main{grid-template-columns:minmax(0,1fr);grid-template-rows:auto auto auto minmax(0,1fr);grid-template-areas:"scene" "dialog" "tabs" "panel"}
   .scene{aspect-ratio:auto;height:calc((100vw - 16px)*.5625);max-height:40vh;align-self:start}
-  .dialog{grid-area:dialog;margin:0;max-height:26vh;overflow:hidden;align-self:auto;background:var(--panel)}
+  .dialog,body.pano .dialog{grid-area:dialog;margin:0;max-height:26vh;overflow:hidden;align-self:auto;background:var(--panel)}
   .place{top:auto;bottom:8px}
   header{flex-wrap:wrap}
   .wm canvas{max-height:34vh}
@@ -396,7 +406,7 @@ function say(name,role,text,clips,pslug){
   typing=setInterval(()=>{const k=Math.ceil(text.length*Math.min(1,(performance.now()-t0)/total));el.textContent=text.slice(0,k);if(k>=text.length){clearInterval(typing);if(!cur)f.classList.remove('talk');}},30);
 }
 let figKey='',lastT=-1,HERO=null;
-function heroKill(){document.querySelectorAll('.exit').forEach(x=>x.remove());if(HERO){cancelAnimationFrame(HERO.raf);HERO.el.remove();HERO=null;}}
+function heroKill(){panoKill();document.querySelectorAll('.exit').forEach(x=>x.remove());if(HERO){cancelAnimationFrame(HERO.raf);HERO.el.remove();HERO=null;}}
 function heroPos(){HERO.el.style.left=HERO.x.toFixed(2)+'%';}
 function heroFrame(n){[...HERO.el.children].forEach((im,i)=>{im.style.opacity=i===n?1:0;});}
 function heroStop(){const H=HERO;H.el.classList.remove('walk');heroFrame(0);if(H.face!=null)H.el.classList.toggle('flip',H.face<H.x);const cb=H.cb;H.cb=null;if(cb)cb();}
@@ -432,12 +442,13 @@ function mkFig(slug,p,flip,ton,label,alt,fn,cls){
   const im=new Image();im.src=(has?'figuren/':'portraits/')+slug+'.webp';im.alt=alt;im.draggable=false;if(flip&&has)im.classList.add('flip');
   b.append(im);b._act=fn;b.onclick=e=>{if(!e||e.detail===0)fn();};return b;}
 function stageFig(){
-  if(!S)return;if(MODE!=='case'){stageHub();return;}const id=S.scene||'',city=id.slice(0,-1),k=+id.slice(-1),c=CITY[city],LC=LV[LVL];
+  if(!S)return;if(MODE!=='case'){stageHub();return;}if(PA&&PA.T)return;const id=S.scene||'',city=id.slice(0,-1),k=+id.slice(-1),c=CITY[city],LC=LV[LVL];
   const want=S.started&&!S.decoy&&c&&c.id===cityNow().id?id:'';
   const base=want+'|'+camOn+'|'+S.i+'|'+LVL;
   if(base!==figKey){figKey=base;heroKill();
     document.querySelectorAll('.fig:not(.out),.item,.card,.hot,.phone,.waves,.bars').forEach(f=>{if(f.classList.contains('fig')){f.classList.add('out');setTimeout(()=>f.remove(),500);}else f.remove();});
     if(want){const o=c.orte[k],P=FIG[id]||{w:[66,5,58],t:'',e:[]},st=$('cam'+camOn).querySelector('.stg');
+      if(PANO[id]){panoStage(id,k,c,P);}else{
       const w=mkFig(o.p,P.w,0,P.t,'Mit '+o.zeuge+' sprechen, '+o.rolle,o.zeuge+', '+o.rolle+' am Schauplatz '+o.ort,()=>ask(k),'wit');
       if(LC.mark){const bub=document.createElement('i');bub.className='bub';bub.textContent='!';w.append(bub);}
       st.append(w);heroMake(st,P);
@@ -447,6 +458,7 @@ function stageFig(){
       const it=S.items&&S.items[S.i];
       if(LC.mark&&it&&it.k===k&&!it.found&&!isFinal()){const b=document.createElement('button');b.type='button';b.className='item';b.setAttribute('aria-label','Fundstück ansehen');
         const x=P.w[0]+(P.w[0]>50?-24:24);b.style.left=x+'%';b.style.bottom=Math.max(2,P.w[1]-2)+'%';b._act=pick;b.onclick=e=>{if(!e||e.detail===0)pick();};st.append(b);}
+      }
     }
   }
   document.querySelectorAll('.fig:not(.out)').forEach(f=>{if(f.classList.contains('wit'))f.classList.toggle('seen',!!S.seen[S.i+'_'+k]);f.disabled=!!S.over||!!S.busy;});
@@ -627,7 +639,7 @@ if(!calm)requestAnimationFrame(fxLoop);
 '''
 FOV['lima'][2]='Die Person, die Sie suchen, kann nicht weit sein. Beeilen Sie sich.' if 'f_lima_2' in dur and False else 'Vor zehn Minuten wollte jemand hier etwas Wertvolles schätzen lassen. Die Person kann nicht weit sein.'
 J=lambda o:json.dumps(o,ensure_ascii=False,separators=(',',':'))
-js=js.replace('__CLUE__',J(D['CLUE'])).replace('__FINAL__',J(D['FINAL'])).replace('__SUS__',sus).replace('__CITY__',J(cities)).replace('__OV__',J(OV)).replace('__FOV__',J(FOV)).replace('__FX__',J(FX)).replace('__DUR__',J(dur)).replace('__FIG__',J(FIG)).replace('__FIGS__',J(FIGS)).replace('__EX__',J(EX)).replace('__HOT__',J(HOT)).replace('__MASK__',mask).replace('__MID__',mid).replace('__META__',open('meta.js').read()).replace('__PLAN__',J({"wien": [[11, 34], [80, 84], [26, 66]], "istanbul": [[45, 60], [50, 84], [83, 50]], "kairo": [[26, 40], [50, 82], [78, 54]], "mumbai": [[25, 84], [62, 55], [33, 22]], "tokio": [[20, 42], [75, 58], [73, 22]], "lima": [[47, 36], [35, 78], [80, 55]], "paris": [[27, 40], [64, 72], [68, 18]], "newyork": [[38, 48], [55, 25], [38, 85]], "rio": [[22, 72], [54, 24], [72, 78]], "sydney": [[56, 54], [88, 45], [25, 76]], "nairobi": [[44, 23], [65, 78], [30, 54]], "peking": [[50, 48], [20, 55], [78, 76]], "marrakesch": [[62, 38], [31, 52], [58, 68]], "reykjavik": [[15, 37], [53, 58], [74, 70]]}))
+js=js.replace('__CLUE__',J(D['CLUE'])).replace('__FINAL__',J(D['FINAL'])).replace('__SUS__',sus).replace('__CITY__',J(cities)).replace('__OV__',J(OV)).replace('__FOV__',J(FOV)).replace('__FX__',J(FX)).replace('__DUR__',J(dur)).replace('__FIG__',J(FIG)).replace('__FIGS__',J(FIGS)).replace('__EX__',J(EX)).replace('__HOT__',J(HOT)).replace('__MASK__',mask).replace('__MID__',mid).replace('__META__',open('meta.js').read()+open('pano.js').read()).replace('__PANO__','{"wien0": {"w": 1.33, "e": [["x_police", 1.76, 1], ["x_oldlady", 0.8, 0]], "h": [["Straßenbahn", 0.25, "Die letzte Bahn ist längst durch. Am Trittbrett klebt frischer Schlamm.", 0.26], ["Museumstreppe", 1.47, "Nasse Fußspuren führen die Treppe herunter und verlieren sich im Regen.", 0.1], ["Markise", 2.75, "Unter der Markise ist das Pflaster trocken. Hier hat jemand eine Weile gewartet.", 0.3]], "p": [["saeule", 0.3], ["bank", 1.02], ["sperre", 1.62], ["saeule", 2.72]], "it": 2.2, "gy": 0.905, "hh": 0.31}, "wien1": {"w": 1.6, "e": [["x_business", 2.5, 1], ["x_porter", 0.75, 0]], "h": [["Schalter", 0.35, "Der Schalter ist geschlossen. Auf der Waage liegt ein vergessener Gepäckanhänger.", 0.2], ["Anzeigetafel", 1.1, "Die Tafel rattert. Der letzte Abendflug ist bereits als abgeflogen markiert.", 0.5], ["Kiosk", 2.35, "Stadtpläne in zwölf Sprachen. Ein Fach ist leer gekauft.", 0.32]], "p": [], "it": 2.05, "gy": 0.86, "hh": 0.29}, "wien2": {"w": 1.3, "e": [["x_reader", 0.6, 0]], "h": [["Garderobe", 0.07, "An einem Haken hängt ein einzelner nasser Schirm.", 0.3], ["Kuchentheke", 1.9, "Sachertorte, Apfelstrudel, Topfengolatsche. Ein Stück Torte fehlt.", 0.24], ["Flügel", 2.7, "Auf dem Notenpult liegt ein Walzer. Die Tasten sind noch warm.", 0.26]], "p": [], "it": 2.3, "gy": 0.93, "hh": 0.33}}').replace('__PJAGD__','{"wien": {"img": "wien_jagd", "z": 2.2, "gy": 0.93, "hh": 0.25, "ton": "nacht"}}').replace('__PLAN__',J({"wien": [[11, 34], [80, 84], [26, 66]], "istanbul": [[45, 60], [50, 84], [83, 50]], "kairo": [[26, 40], [50, 82], [78, 54]], "mumbai": [[25, 84], [62, 55], [33, 22]], "tokio": [[20, 42], [75, 58], [73, 22]], "lima": [[47, 36], [35, 78], [80, 55]], "paris": [[27, 40], [64, 72], [68, 18]], "newyork": [[38, 48], [55, 25], [38, 85]], "rio": [[22, 72], [54, 24], [72, 78]], "sydney": [[56, 54], [88, 45], [25, 76]], "nairobi": [[44, 23], [65, 78], [30, 54]], "peking": [[50, 48], [20, 55], [78, 76]], "marrakesch": [[62, 38], [31, 52], [58, 68]], "reykjavik": [[15, 37], [53, 58], [74, 70]]}))
 head=head.replace('<h1>Akte Meridian<small>Fall 1 · Das Salzfass von Wien</small></h1>','<h1>Akte Meridian<small>Fall</small></h1>').replace('Frist Sa 18:00 · noch <b id="remain">129 h</b>','Frist <b id="frist">Sa 18:00</b> · noch <b id="remain">129 h</b>').replace('<em>Fall 1 · Das Salzfass von Wien</em>','<em>Fall</em>')
 head=head.replace('<div class="left">','<nav class="tabs" id="tabs" aria-label="Bereiche"><button type="button" data-t="q" aria-pressed="true">Befragen</button><button type="button" data-t="r" aria-pressed="false">Reisen</button><button type="button" data-t="p" aria-pressed="false">Profil</button><button type="button" data-t="n" id="tab-n" aria-pressed="false">Notizen</button></nav>\n    <div class="left">')
 head=head.replace('<section>\n        <h2>Täterprofil</h2>','<section id="sec-p">\n        <h2>Täterprofil</h2>').replace('<section>\n        <h2>Kartei: Der Zirkel</h2>','<section id="sec-k">\n        <h2>Kartei: Der Zirkel</h2>').replace('<section>\n        <h2>Notizbuch</h2>','<section id="sec-n">\n        <h2>Notizbuch</h2>')
