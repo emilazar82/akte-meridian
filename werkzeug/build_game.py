@@ -36,7 +36,7 @@ COMPACT=r"""
   .bar{height:3px;flex:none}
   .main{flex:1;min-height:0;display:grid;gap:6px;align-items:stretch;grid-template-columns:minmax(0,1fr) minmax(215px,34%);grid-template-rows:auto minmax(0,1fr);grid-template-areas:"scene tabs" "scene panel"}
   .left{display:contents}
-  .scene{grid-area:scene;aspect-ratio:auto;height:100%;min-height:0;border-radius:8px}
+  .scene{grid-area:scene;aspect-ratio:auto;height:auto;align-self:stretch;min-height:0;border-radius:8px}
   .dialog{grid-area:scene;align-self:end;z-index:3;margin:6px;min-height:0;max-height:62%;overflow:auto;padding:8px;gap:8px;background:rgba(13,19,32,.88)}
   body.flying .dialog,body.flying .place{visibility:hidden}
   .face{flex-basis:52px;height:52px;border-radius:8px}
@@ -70,7 +70,7 @@ COMPACT=r"""
 @media (max-width:900px) and (orientation:portrait){
   header{flex-wrap:wrap}
   .main{grid-template-columns:minmax(0,1fr);grid-template-rows:auto auto auto minmax(0,1fr);grid-template-areas:"scene" "dialog" "tabs" "panel"}
-  .scene{aspect-ratio:16/9;height:auto}
+  .scene{aspect-ratio:auto;height:calc((100vw - 16px)*.5625);max-height:40vh;align-self:start}
   .dialog{grid-area:dialog;margin:0;max-height:26vh;align-self:auto;background:var(--panel)}
   .place{top:auto;bottom:8px}
   body.flying .dialog{visibility:visible}
