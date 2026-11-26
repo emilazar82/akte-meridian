@@ -81,11 +81,11 @@ function step(dt){
   let top0=.72;
   if(!mv&&H.target!=null){const d=H.target-H.x;if(Math.abs(d)<.012){H.target=null;const a=H.after;H.after=null;if(a)a();}else{mv=d>0?1:-1;top0=Math.min(.72,Math.abs(d)*5+.1);}}
   if(mv)H.dir=mv;
-  const want0=mv*top0,dv=want0-H.vx,acc=(mv?3.2:4.5)*dt;H.vx+=Math.max(-acc,Math.min(acc,dv));if(calm)H.vx=want0;
-  H.run=Math.abs(H.vx)>.04?1:0;
-  if(H.run){mv=H.vx>0?1:-1;const nx=Math.max(.05,Math.min(WORLD-.05,H.x+H.vx*dt)),feet=-H.y;let blocked=false;
-    OBJ.forEach(b=>{if(!b.solid)return;const edge=b.w/2+HW;if(Math.abs(nx-b.x)<edge&&Math.abs(nx-b.x)<Math.abs(H.x-b.x)&&feet<b.h-.012)blocked=true;});
-    if(blocked){H.vx=0;if(H.target!=null&&(H.y===0||H.on))jump();}else{H.dist+=Math.abs(nx-H.x);H.x=nx;}}
+  const feet=-H.y,blk=d=>OBJ.some(o=>{if(!o.solid)return false;const e=o.w/2+HW,n=Math.abs(H.x+d-o.x);return n<e&&n<Math.abs(H.x-o.x)&&feet<o.h-.012;});
+  if(mv&&blk(mv*.006)){H.vx=0;H.run=0;if(H.target!=null&&(H.y===0||H.on))jump();}
+  else{const want0=mv*top0,dv=want0-H.vx,acc=(mv?3.2:4.5)*dt;H.vx+=Math.max(-acc,Math.min(acc,dv));if(calm)H.vx=want0;
+    if(Math.abs(H.vx)>.04&&!blk(H.vx*dt)){const nx=Math.max(.05,Math.min(WORLD-.05,H.x+H.vx*dt));H.dist+=Math.abs(nx-H.x);H.run=nx!==H.x?1:0;H.x=nx;}
+    else{H.run=0;if(Math.abs(H.vx)>.04)H.vx=0;}}
   // Schwerkraft und Landen
   const [top,o]=topAt(H.x);
   if(H.on&&(!o||o!==H.on)){H.on=null;}
