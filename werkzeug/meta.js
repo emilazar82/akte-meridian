@@ -27,7 +27,7 @@ function office(kind,promo,done){if(MODE==='case'&&active()){if(S.busy)return;S.
 function cell(){MODE='cell';document.body.dataset.mode='cell';figKey='';stopAudio();setScene('zelle','Zellentrakt','Büro Meridian');const n=META.arrested.length;
   if(META.neu)hubSay('Im Zellentrakt wird es voller. So gefällt mir das.',['h_cell']);
   else say('Zellentrakt','Büro Meridian',n?n+' von '+ALLSUS.length+' Mitgliedern des Zirkels sitzen ein. Tippen Sie eine Person an.':'Die Zelle ist leer. Noch.');render();}
-function stageHub(){const key=MODE+'|'+camOn+'|'+META.arrested.length+'|'+RING;if(key===figKey)return;figKey=key;
+function stageHub(){const key=MODE+'|'+camOn+'|'+META.arrested.length+'|'+RING;if(key===figKey)return;figKey=key;heroKill();
   document.querySelectorAll('.fig:not(.out),.item,.card,.hot,.bars,.phone,.waves').forEach(f=>f.remove());
   const st=$('cam'+camOn).querySelector('.stg');
   if(MODE==='office')HUB.forEach(h=>{const b=el('button','hot hub'+(h[3]==='tel'&&RING?' ring':''));b.type='button';b.style.left=h[1]+'%';b.style.bottom=h[2]+'%';b.setAttribute('aria-label',h[0]);const f=()=>hub(h[3]);b._act=f;b.onclick=e=>{if(!e||e.detail===0)f();};b.append(el('span','',h[0]));st.append(b);});
