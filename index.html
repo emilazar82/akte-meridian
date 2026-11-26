@@ -103,6 +103,7 @@ h1 small{display:block;font-family:var(--body);font-size:13px;color:var(--muted)
 @media (prefers-reduced-motion:reduce){.mv,.pulse,.face img,.face,.place,.stampbig,.stamp,.notes li{animation:none!important}.cam,.bar i{transition:none}}
 
 .tabs{display:none}
+.lv{display:flex;gap:6px}.lv button{flex:1;min-width:0;background:transparent;color:var(--muted);border:1px solid var(--line);border-radius:8px;padding:8px 4px;font:inherit;font-size:14px;min-height:38px;cursor:pointer}.lv button[aria-pressed="true"]{background:var(--amber);color:#1c1405;border-color:var(--amber);font-weight:600}
 #map{object-fit:contain;z-index:4}
 /* Handy und kleine Fenster: alles auf einem Bildschirm, kein Seiten-Scrollen */
 @media (max-width:900px),(max-height:520px){
@@ -230,7 +231,11 @@ const FOV={"lima":["Jemand, auf den das passt, ist eben hier vorbeigerannt. Pass
 const FX={"wien0":"rain","tokio0":"rain","lima1":"fog","tokio1":"fog","istanbul0":"dust","kairo0":"dust","kairo2":"dust","mumbai2":"dust","wien2":"dust","newyork0":"rain","reykjavik2":"fog","peking2":"fog","marrakesch1":"dust","nairobi0":"dust","rio2":"dust","peking1":"dust","marrakesch0":"fog"};
 const DUR={"d_istanbul_0_kairo":5.8,"d_istanbul_1_kairo":5.9,"d_istanbul_2_kairo":5.7,"d_kairo_0_mumbai":5.7,"d_kairo_1_mumbai":5.6,"d_kairo_2_mumbai":7.5,"d_mumbai_0_tokio":4.9,"d_mumbai_1_tokio":5.3,"d_mumbai_2_tokio":5.8,"d_tokio_0_lima":7.0,"d_tokio_1_lima":5.4,"d_tokio_2_lima":6.6,"d_wien_0_istanbul":7.7,"d_wien_1_istanbul":6.5,"d_wien_2_istanbul":6.3,"f_lima_0":4.9,"f_lima_1":6.1,"flughafen":5.7,"h_arr_istanbul":5.0,"h_arr_kairo":5.0,"h_arr_mumbai":4.9,"h_arr_tokio":4.9,"h_back":5.8,"h_decoy":4.8,"h_nowarrant":7.7,"h_warrant":4.0,"h_wrong":5.4,"t_istanbul_0":3.2,"t_istanbul_1":3.3,"t_istanbul_2":3.3,"t_istanbul_3":4.4,"t_istanbul_4":3.0,"t_kairo_0":2.3,"t_kairo_1":3.1,"t_kairo_2":2.7,"t_kairo_3":2.6,"t_mumbai_0":2.8,"t_mumbai_1":2.7,"t_mumbai_2":2.7,"t_mumbai_3":2.4,"t_tokio_0":3.2,"t_tokio_1":3.2,"t_tokio_2":4.3,"t_tokio_3":3.1,"t_tokio_4":3.0,"t_wien_0":2.6,"t_wien_1":2.8,"t_wien_2":3.1,"t_wien_3":3.8,"t_wien_4":3.1,"h_brief_wien":15.5,"h_brief_istanbul":14.2,"h_brief_kairo":13.2,"h_brief_tokio":15.8,"h_brief_paris":13.3,"h_brief_newyork":13.4,"h_brief_rio":14.1,"h_brief_peking":12.5,"h_begin":3.8,"h_final":5.7,"h_win":8.1,"h_arr_wien":4.9,"h_arr_lima":4.9,"h_arr_paris":4.9,"h_arr_newyork":4.9,"h_arr_rio":5.6,"h_arr_sydney":4.9,"h_arr_nairobi":5.0,"h_arr_peking":4.9,"h_arr_marrakesch":5.0,"h_arr_reykjavik":5.1,"d_wien_0_paris":5.4,"d_wien_0_marrakesch":4.4,"f_wien_0":4.8,"d_wien_1_paris":5.2,"d_wien_1_marrakesch":5.0,"f_wien_1":4.5,"d_wien_2_paris":5.5,"d_wien_2_marrakesch":5.0,"f_wien_2":4.0,"d_istanbul_0_nairobi":2.2,"d_istanbul_0_reykjavik":2.4,"f_istanbul_0":4.7,"d_istanbul_1_nairobi":5.2,"d_istanbul_1_reykjavik":4.8,"f_istanbul_1":4.2,"d_istanbul_2_nairobi":5.7,"d_istanbul_2_reykjavik":5.1,"f_istanbul_2":4.1,"d_kairo_0_nairobi":2.4,"d_kairo_0_marrakesch":4.1,"f_kairo_0":4.5,"d_kairo_1_nairobi":5.3,"d_kairo_1_marrakesch":4.7,"f_kairo_1":4.1,"d_kairo_2_nairobi":5.7,"f_kairo_2":4.0,"d_mumbai_0_peking":1.8,"d_mumbai_0_sydney":2.4,"f_mumbai_0":4.5,"d_mumbai_1_peking":4.1,"d_mumbai_1_sydney":4.5,"f_mumbai_1":4.4,"d_mumbai_2_peking":4.5,"d_mumbai_2_sydney":5.6,"f_mumbai_2":4.2,"d_tokio_0_sydney":2.6,"d_tokio_0_newyork":4.7,"f_tokio_0":4.7,"d_tokio_1_sydney":4.2,"d_tokio_1_newyork":4.1,"f_tokio_1":4.2,"d_tokio_2_sydney":5.4,"d_tokio_2_newyork":4.8,"f_tokio_2":3.8,"d_lima_0_rio":4.1,"d_lima_0_newyork":4.6,"d_lima_0_sydney":2.6,"d_lima_1_rio":5.1,"d_lima_1_newyork":4.2,"d_lima_1_sydney":4.3,"t_lima_0":2.5,"t_lima_1":3.2,"t_lima_2":2.9,"t_lima_3":2.8,"d_lima_2_rio":4.9,"d_lima_2_newyork":4.5,"d_lima_2_sydney":4.9,"f_lima_2":5.6,"d_paris_1_newyork":4.2,"d_paris_1_marrakesch":5.2,"d_paris_1_reykjavik":5.0,"t_paris_0":3.0,"t_paris_1":2.9,"t_paris_2":2.8,"t_paris_3":2.5,"f_paris_1":4.5,"d_newyork_0_rio":3.8,"d_newyork_0_reykjavik":2.5,"d_newyork_0_wien":5.9,"t_newyork_0":3.3,"t_newyork_1":3.5,"t_newyork_2":3.5,"t_newyork_3":4.5,"t_newyork_4":3.2,"f_newyork_0":4.8,"h_time":6.1,"d_kairo_2_marrakesch":5.2,"d_paris_0_newyork":4.5,"d_paris_0_marrakesch":3.9,"d_paris_0_reykjavik":2.5,"f_paris_0":4.6,"d_paris_2_newyork":4.7,"d_paris_2_marrakesch":4.9,"d_paris_2_reykjavik":5.1,"f_paris_2":3.8,"d_newyork_1_rio":4.9,"d_newyork_1_reykjavik":4.5,"d_newyork_1_wien":3.7,"f_newyork_1":3.9,"d_newyork_2_rio":5.1,"d_newyork_2_reykjavik":5.5,"d_newyork_2_wien":6.6,"f_newyork_2":4.1,"d_rio_0_lima":2.3,"d_rio_0_nairobi":2.2,"d_rio_0_paris":5.3,"f_rio_0":4.6,"d_rio_1_lima":4.5,"d_rio_1_nairobi":4.9,"d_rio_1_paris":4.6,"f_rio_1":4.2,"d_sydney_0_peking":1.8,"d_sydney_0_rio":3.9,"d_sydney_0_mumbai":2.5,"f_sydney_0":4.7,"d_sydney_1_peking":4.1,"d_sydney_1_rio":5.2,"d_sydney_1_mumbai":5.4,"t_sydney_0":3.2,"t_sydney_1":2.7,"t_sydney_2":4.1,"t_sydney_3":3.1,"t_sydney_4":2.6,"f_sydney_1":4.2,"d_sydney_2_peking":4.2,"d_sydney_2_rio":4.9,"d_sydney_2_mumbai":7.0,"f_sydney_2":3.8,"d_nairobi_0_mumbai":2.8,"d_nairobi_0_kairo":3.2,"d_nairobi_0_istanbul":5.2,"t_nairobi_0":2.6,"t_nairobi_1":3.0,"t_nairobi_2":3.3,"t_nairobi_3":3.8,"t_nairobi_4":3.3,"f_nairobi_0":5.1,"d_nairobi_1_mumbai":5.7,"d_nairobi_1_kairo":4.9,"d_nairobi_1_istanbul":3.8,"f_nairobi_1":4.3,"d_nairobi_2_mumbai":7.2,"d_nairobi_2_kairo":6.3,"d_nairobi_2_istanbul":4.8,"f_nairobi_2":3.9,"d_peking_1_tokio":4.3,"d_peking_1_wien":4.2,"d_peking_1_kairo":5.1,"f_peking_1":4.4,"d_peking_2_tokio":4.5,"d_peking_2_wien":6.3,"d_peking_2_kairo":6.0,"t_peking_0":3.1,"t_peking_1":3.3,"t_peking_2":3.1,"t_peking_3":4.2,"t_peking_4":3.0,"f_peking_2":3.9,"d_marrakesch_0_paris":5.4,"d_marrakesch_0_rio":4.0,"d_marrakesch_0_kairo":3.3,"f_marrakesch_0":5.0,"d_marrakesch_1_paris":4.9,"d_marrakesch_1_rio":5.4,"d_marrakesch_1_kairo":5.0,"t_marrakesch_0":3.3,"t_marrakesch_1":3.0,"t_marrakesch_2":4.1,"t_marrakesch_3":3.2,"t_marrakesch_4":2.8,"f_marrakesch_1":4.4,"d_marrakesch_2_paris":5.4,"d_marrakesch_2_rio":4.5,"d_marrakesch_2_kairo":5.8,"f_marrakesch_2":3.7,"d_reykjavik_0_newyork":5.0,"d_reykjavik_0_wien":6.1,"d_reykjavik_0_peking":1.8,"t_reykjavik_0":2.7,"t_reykjavik_1":3.4,"t_reykjavik_2":3.0,"t_reykjavik_3":2.9,"f_reykjavik_0":4.9,"d_reykjavik_1_newyork":3.8,"d_reykjavik_1_wien":3.7,"d_reykjavik_1_peking":3.9,"f_reykjavik_1":4.0,"d_reykjavik_2_newyork":5.0,"d_reykjavik_2_wien":6.5,"d_reykjavik_2_peking":4.5,"f_reykjavik_2":4.1,"d_rio_2_lima":6.2,"d_rio_2_nairobi":5.3,"d_rio_2_paris":5.4,"t_rio_0":2.4,"t_rio_1":2.6,"t_rio_2":3.0,"t_rio_3":3.4,"t_rio_4":2.9,"f_rio_2":3.7,"d_peking_0_tokio":2.5,"d_peking_0_wien":5.4,"d_peking_0_kairo":3.0,"f_peking_0":4.5};
 const LAND='00000000000000000000000000000000000000000000000000000000000000000001fe0ff800000000000000000000000fe3fffc00d00000180000000000192fc7fff80000002003800000000018bec07ff800000201fff4100003c003cbf83fe0000c0037ffffff8087ffffffae3f80007fcff7ffffffff03ffffffbc1c0600effffffffffffe07fffff8300c0003dfffffffffff5c0083fff83a000022cfffffffffe0400000fffe3f0000209fffffffff80c000007fffbf80005ffffffffffff08000001ffffc00001ffffffffffff00000001ffffc00001ffd7bffffffd00000001ffff800005df877ffffff900000001fffe000007073fbfffff6000000001fffe000007097fbfffffa200000000fffc000003e00fffffff0c000000007ff8000007f98fffffff90000000001f0800000fffef7fffff80000000000f0000001fffff8fffff0000000000060400001ffff7f1fdfc0000000000072080001ffff3e0f1e8000000000001e000003ffffbc0e1f08000000000003000003fffff00607000000000000011d0001fffff80601000000000000003f0000fffff80000040000000000003fe00043fff00008300000000000003fe00001ffe00006e00000000000007ff80001ffc00002688000000000007ffe0000ff800002007000000000007fff0000ff800000c03800000000003fff0000ff800000000000000000001ffe0000ffc80000019000000000000ffe0000ff98000007d8000000000007fe0000ff1000000ff8000000000007fc00007f3000003ffc00000000000ff000007e0000003ffe00000000000ff000007e0000003ffe00000000000fe000003c0000001ffe00000000000fc0000020000000103c00000000001f80000000000000001c02000000001e00000000000000000002000000000c00000000000000000004000000001c000000000000000000080000000018000000000000000000000000000018000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001000000000000000000000000000004000000000f01fffff800000000000e000002efffefffffffc00000102f4f0001fffffffffffffff0001ffffff8001fffffffffffffffe0023fffffc01c3fffffffffffffffc0007fffffff3fffffffffffffffffe0ffdfffffffffffffffffffffffffffffffffffffffffffffffffffffffff';
-const DAYS=['Mo','Di','Mi','Do','Fr','Sa','So'], START=9, QH=2, LEN=6;
+const DAYS=['Mo','Di','Mi','Do','Fr','Sa','So'], START=9, QH=2;
+const LV={l:{n:'Leicht',buf:30,dec:3,len:6,notes:1,count:1,re:1,d:'Viel Zeit, 4 Reiseziele, das Notizbuch schreibt mit.'},
+ m:{n:'Mittel',buf:16,dec:4,len:6,notes:1,count:1,re:6,d:'Knappe Frist, 5 Reiseziele. Ein neuer Haftbefehl kostet 6 Stunden.'},
+ s:{n:'Schwer',buf:6,dec:5,len:7,notes:0,count:0,re:0,d:'7 Städte, 6 Reiseziele, kaum Zeitpuffer. Sie notieren selbst und haben nur einen Haftbefehl.'}};
+let LVL='l',LEN=6;try{const v=localStorage.getItem('am-stufe');if(LV[v])LVL=v;}catch(e){}
 const $=id=>document.getElementById(id);
 const calm=matchMedia('(prefers-reduced-motion: reduce)').matches;
 const ALT={flughafen:'Leere Ankunftshalle eines Flughafens bei Nacht'};
@@ -290,24 +295,24 @@ function hours(a,b){const r=x=>x*Math.PI/180,A=CITY[a].co,B=CITY[b].co,h=Math.si
 function makeRoute(start){
   const go=path=>{if(path.length===LEN)return path;
     for(const n of shuffle(CITY[path[path.length-1]].nxt)){if(path.includes(n))continue;
-      if(path.length<LEN-1&&path.some(x=>CITY[x].attr===CITY[n].attr))continue;
+      if(path.length<5&&path.some(x=>CITY[x].attr===CITY[n].attr))continue;
       const r=go(path.concat(n));if(r)return r;}
     return null;};
   return go([start]);
 }
 function step(t,h){t+=h;const hr=t%24;if(hr>=23)t+=24-hr+7;else if(hr<7)t+=7-hr;return t;}
 function newGame(){
-  let route=null,start;const starts=Object.keys(CITY).filter(k=>CITY[k].start);
+  const LC=LV[LVL];LEN=LC.len;let route=null,start;const starts=Object.keys(CITY).filter(k=>CITY[k].start);
   while(!route){start=starts[Math.floor(Math.random()*starts.length)];route=makeRoute(start);}
   const others=Object.keys(CITY).filter(k=>!route.includes(k));
-  const ziele=route.slice(0,-1).map(()=>shuffle(others).slice(0,3));
-  let t=START;for(let i=0;i<LEN-1;i++){for(let q=0;q<3;q++)t=step(t,QH);t=step(t,hours(route[i],route[i+1]));}
-  t=step(t,QH);t=step(t,QH);t=step(t,1);DEAD=Math.ceil((t+30)/6)*6;
+  const ziele=route.slice(0,-1).map(()=>shuffle(others).slice(0,LC.dec));
+  let t=0;for(let w=0;w<LEN;w++){let u=START;for(let i=0;i<LEN-1;i++){for(let q=0;q<3;q++)u=step(u,QH);if(i===w)u=step(u,1);u=step(u,hours(route[i],route[i+1]));}
+    if(w===LEN-1)u=step(u,1);u=step(u,QH);u=step(u,QH);t=Math.max(t,u);}DEAD=LC.buf>10?Math.ceil((t+LC.buf)/6)*6:t+LC.buf;
   S={route,ziele,i:0,decoy:null,t:START,seen:{},notes:[],profile:{},warrant:null,culprit:SUSPECTS[Math.floor(Math.random()*SUSPECTS.length)],fin:0,over:false,started:false,busy:false,scene:null};
   ATTR.forEach(a=>S.profile[a[0]]='');lastNote=0;
   const st=document.querySelector('.stampbig');if(st)st.remove();
   const c=CITY[start],fall='Fall: '+c.start.fall;
-  document.querySelector('h1 small').textContent=fall;document.querySelector('#titlecard em').textContent=fall;
+  document.querySelector('h1 small').textContent=fall+' · '+LC.n;document.querySelector('#titlecard em').textContent=fall;
   $('titlecard').classList.remove('gone');
   setScene(start+'0','','');
   say('Direktorin Halberg','Büro Meridian','Auf Ihrem Schreibtisch liegt eine neue Akte. Nehmen Sie den Fall an, dann bekommen Sie das Briefing.');
@@ -336,7 +341,7 @@ function say(name,role,text,clips,pslug){
   const tick=30,step=speak?Math.max(.35,text.length/(secs*.92*1000/tick)):2;let k=0;el.textContent='';f.classList.add('talk');
   typing=setInterval(()=>{k+=step;el.textContent=text.slice(0,Math.ceil(k));if(k>=text.length){clearInterval(typing);if(!cur)f.classList.remove('talk');}},tick);
 }
-function note(stadt,zeuge,text){S.notes.unshift({stadt,zeuge,text});}
+function note(stadt,zeuge,text){if(!LV[LVL].notes)return;S.notes.unshift({stadt,zeuge,text});}
 function beute(){return CITY[S.route[0]].start.beute;}
 function timeUp(){if(S.t<=DEAD)return false;finish(false,'Die Frist ist abgelaufen. Die Spur ist kalt und der Zirkel hat die Beute außer Landes gebracht.','h_time');return true;}
 function finish(win,text,clip){
@@ -345,7 +350,11 @@ function finish(win,text,clip){
 }
 function line(c,k){
   if(isFinal()){const t=(FOV[c.id]||FINAL)[k];return {text:t,clips:['f_'+c.id+'_'+k]};}
-  const y=S.route[S.i+1],ov=OV[c.id+'>'+y];let text=ov?ov[k]:CITY[y].hint[k];const clips=['d_'+c.id+'_'+k+'_'+y];
+  const y=S.route[S.i+1],ov=OV[c.id+'>'+y];
+  if(LVL==='s'&&('x_'+c.id+'_'+y) in DUR){const v=S.culprit[c.attr];
+    if(k===c.trait)return {text:CLUE[c.attr][v],clips:['t_'+c.id+'_'+Object.keys(CLUE[c.attr]).indexOf(v)]};
+    if(k===(c.trait+1)%3)return {text:CITY[y].hard,clips:['x_'+c.id+'_'+y]};
+    return {text:c.nix,clips:['n_'+c.id]};}let text=ov?ov[k]:CITY[y].hint[k];const clips=['d_'+c.id+'_'+k+'_'+y];
   if(c.trait===k){const v=S.culprit[c.attr];text+=' '+CLUE[c.attr][v];clips.push('t_'+c.id+'_'+Object.keys(CLUE[c.attr]).indexOf(v));}
   return {text,clips};
 }
@@ -387,7 +396,8 @@ function travel(to,h,correct){
 }
 function issue(){
   const m=matches();if(S.over||S.busy||!S.started||m.length!==1)return;
-  advance(1);S.warrant=m[0].name;
+  const LC=LV[LVL];if(S.warrant&&(!LC.re||S.warrant===m[0].name))return;
+  advance(S.warrant?LC.re:1);S.warrant=m[0].name;
   say('Direktorin Halberg','per Funk','Der Haftbefehl ist unterschrieben. Ich hoffe, Sie sind sich sicher.'+(isFinal()?'':'\n\n(Folgen Sie jetzt der Spur weiter, bis sie endet. Dort kommt es zum Zugriff.)'),['h_warrant']);
   timeUp();render();
 }
@@ -400,7 +410,10 @@ function render(){
   $('leftchip').classList.toggle('warn',rest<24);
   const pct=Math.round(rest/(DEAD-START)*100);$('barfill').style.width=pct+'%';$('pbar').setAttribute('aria-valuenow',pct);
   const A=$('actions');A.innerHTML='';
-  if(!S.started){setTab('q');const b=box('Neuer Auftrag');b.append(btn('Fall annehmen','',begin,'big'));A.append(b);}
+  const LC=LV[LVL];
+  if(!S.started){setTab('q');const b=box('Neuer Auftrag');const g=document.createElement('div');g.className='lv';g.setAttribute('role','group');g.setAttribute('aria-label','Schwierigkeit');
+    Object.keys(LV).forEach(k=>{const x=document.createElement('button');x.type='button';x.textContent=LV[k].n;x.setAttribute('aria-pressed',k===LVL);x.onclick=()=>{LVL=k;try{localStorage.setItem('am-stufe',k);}catch(e){}newGame();};g.append(x);});
+    const p=document.createElement('p');p.className='hint';p.textContent=LC.d;b.append(g,p,btn('Fall annehmen','',begin,'big'));A.append(b);}
   else if(S.over){setTab('q');const b=box(S.win?'Fall gelöst':'Fall verloren');b.append(btn('Neuen Fall starten','',newGame,'big'));A.append(b);}
   else{
     const q=box('Befragen');
@@ -420,15 +433,16 @@ function render(){
     s.onchange=()=>{S.profile[a[0]]=s.value;render();};F.append(l,s);});}
   ATTR.forEach(a=>{$('p-'+a[0]).value=S.profile[a[0]];});
   const m=matches(),L=$('sus');L.innerHTML='';
-  SUSPECTS.forEach(s=>{const li=document.createElement('li');li.textContent=s.name;if(!m.includes(s))li.className='out';L.append(li);});
+  SUSPECTS.forEach(s=>{const li=document.createElement('li');li.textContent=s.name;if(LC.count&&!m.includes(s))li.className='out';L.append(li);});
   $('count').textContent=m.length===1?'Ein Name bleibt übrig: '+m[0].name+'.':m.length===0?'Niemand passt auf dieses Profil. Prüf deine Einträge.':m.length+' Verdächtige passen noch'+(m.length<=3?': '+m.map(x=>x.name).join(', ')+'.':'.');
+  $('count').hidden=!LC.count;
   $('tab-n').textContent='Notizen'+(S.notes.length?' '+S.notes.length:'');
-  $('warrant').disabled=S.over||S.busy||!S.started||m.length!==1;
+  $('warrant').disabled=S.over||S.busy||!S.started||m.length!==1||(S.warrant&&!LC.re);
   $('stamp').hidden=!S.warrant;$('stamp').textContent=S.warrant?'Haftbefehl ausgestellt auf: '+S.warrant:'';
   const N=$('notes');N.innerHTML='';
   S.notes.forEach((n,i)=>{const li=document.createElement('li');if(i===0&&S.notes.length>lastNote)li.className='new';const b=document.createElement('b');b.textContent=n.stadt+' · '+n.zeuge;li.append(b,n.text);N.append(li);});
   lastNote=S.notes.length;
-  $('empty').hidden=S.notes.length>0;$('empty').textContent='Noch keine Hinweise. Befrag die Zeugen in '+CITY[S.route[0]].name+'.';
+  $('empty').hidden=S.notes.length>0;$('empty').textContent=LC.notes?'Noch keine Hinweise. Befrag die Zeugen in '+CITY[S.route[0]].name+'.':'Auf Stufe Schwer schreibt niemand für Sie mit. Merken Sie sich, was die Zeugen sagen.';
 }
 function setTab(t){document.body.dataset.tab=t;document.querySelectorAll('#tabs button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.t===t));}
 document.querySelectorAll('#tabs button').forEach(b=>b.onclick=()=>setTab(b.dataset.t));

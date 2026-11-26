@@ -23,6 +23,7 @@ FOV['lima'][2]='__GEN__'
 
 COMPACT=r"""
 .tabs{display:none}
+.lv{display:flex;gap:6px}.lv button{flex:1;min-width:0;background:transparent;color:var(--muted);border:1px solid var(--line);border-radius:8px;padding:8px 4px;font:inherit;font-size:14px;min-height:38px;cursor:pointer}.lv button[aria-pressed="true"]{background:var(--amber);color:#1c1405;border-color:var(--amber);font-weight:600}
 #map{object-fit:contain;z-index:4}
 /* Handy und kleine Fenster: alles auf einem Bildschirm, kein Seiten-Scrollen */
 @media (max-width:900px),(max-height:520px){
@@ -89,7 +90,11 @@ const FOV=__FOV__;
 const FX=__FX__;
 const DUR=__DUR__;
 const LAND='__MASK__';
-const DAYS=['Mo','Di','Mi','Do','Fr','Sa','So'], START=9, QH=2, LEN=6;
+const DAYS=['Mo','Di','Mi','Do','Fr','Sa','So'], START=9, QH=2;
+const LV={l:{n:'Leicht',buf:30,dec:3,len:6,notes:1,count:1,re:1,d:'Viel Zeit, 4 Reiseziele, das Notizbuch schreibt mit.'},
+ m:{n:'Mittel',buf:16,dec:4,len:6,notes:1,count:1,re:6,d:'Knappe Frist, 5 Reiseziele. Ein neuer Haftbefehl kostet 6 Stunden.'},
+ s:{n:'Schwer',buf:6,dec:5,len:7,notes:0,count:0,re:0,d:'7 Städte, 6 Reiseziele, kaum Zeitpuffer. Sie notieren selbst und haben nur einen Haftbefehl.'}};
+let LVL='l',LEN=6;try{const v=localStorage.getItem('am-stufe');if(LV[v])LVL=v;}catch(e){}
 const $=id=>document.getElementById(id);
 const calm=matchMedia('(prefers-reduced-motion: reduce)').matches;
 const ALT={flughafen:'Leere Ankunftshalle eines Flughafens bei Nacht'};
@@ -104,24 +109,24 @@ function hours(a,b){const r=x=>x*Math.PI/180,A=CITY[a].co,B=CITY[b].co,h=Math.si
 function makeRoute(start){
   const go=path=>{if(path.length===LEN)return path;
     for(const n of shuffle(CITY[path[path.length-1]].nxt)){if(path.includes(n))continue;
-      if(path.length<LEN-1&&path.some(x=>CITY[x].attr===CITY[n].attr))continue;
+      if(path.length<5&&path.some(x=>CITY[x].attr===CITY[n].attr))continue;
       const r=go(path.concat(n));if(r)return r;}
     return null;};
   return go([start]);
 }
 function step(t,h){t+=h;const hr=t%24;if(hr>=23)t+=24-hr+7;else if(hr<7)t+=7-hr;return t;}
 function newGame(){
-  let route=null,start;const starts=Object.keys(CITY).filter(k=>CITY[k].start);
+  const LC=LV[LVL];LEN=LC.len;let route=null,start;const starts=Object.keys(CITY).filter(k=>CITY[k].start);
   while(!route){start=starts[Math.floor(Math.random()*starts.length)];route=makeRoute(start);}
   const others=Object.keys(CITY).filter(k=>!route.includes(k));
-  const ziele=route.slice(0,-1).map(()=>shuffle(others).slice(0,3));
-  let t=START;for(let i=0;i<LEN-1;i++){for(let q=0;q<3;q++)t=step(t,QH);t=step(t,hours(route[i],route[i+1]));}
-  t=step(t,QH);t=step(t,QH);t=step(t,1);DEAD=Math.ceil((t+30)/6)*6;
+  const ziele=route.slice(0,-1).map(()=>shuffle(others).slice(0,LC.dec));
+  let t=0;for(let w=0;w<LEN;w++){let u=START;for(let i=0;i<LEN-1;i++){for(let q=0;q<3;q++)u=step(u,QH);if(i===w)u=step(u,1);u=step(u,hours(route[i],route[i+1]));}
+    if(w===LEN-1)u=step(u,1);u=step(u,QH);u=step(u,QH);t=Math.max(t,u);}DEAD=LC.buf>10?Math.ceil((t+LC.buf)/6)*6:t+LC.buf;
   S={route,ziele,i:0,decoy:null,t:START,seen:{},notes:[],profile:{},warrant:null,culprit:SUSPECTS[Math.floor(Math.random()*SUSPECTS.length)],fin:0,over:false,started:false,busy:false,scene:null};
   ATTR.forEach(a=>S.profile[a[0]]='');lastNote=0;
   const st=document.querySelector('.stampbig');if(st)st.remove();
   const c=CITY[start],fall='Fall: '+c.start.fall;
-  document.querySelector('h1 small').textContent=fall;document.querySelector('#titlecard em').textContent=fall;
+  document.querySelector('h1 small').textContent=fall+' · '+LC.n;document.querySelector('#titlecard em').textContent=fall;
   $('titlecard').classList.remove('gone');
   setScene(start+'0','','');
   say('Direktorin Halberg','Büro Meridian','Auf Ihrem Schreibtisch liegt eine neue Akte. Nehmen Sie den Fall an, dann bekommen Sie das Briefing.');
@@ -150,7 +155,7 @@ function say(name,role,text,clips,pslug){
   const tick=30,step=speak?Math.max(.35,text.length/(secs*.92*1000/tick)):2;let k=0;el.textContent='';f.classList.add('talk');
   typing=setInterval(()=>{k+=step;el.textContent=text.slice(0,Math.ceil(k));if(k>=text.length){clearInterval(typing);if(!cur)f.classList.remove('talk');}},tick);
 }
-function note(stadt,zeuge,text){S.notes.unshift({stadt,zeuge,text});}
+function note(stadt,zeuge,text){if(!LV[LVL].notes)return;S.notes.unshift({stadt,zeuge,text});}
 function beute(){return CITY[S.route[0]].start.beute;}
 function timeUp(){if(S.t<=DEAD)return false;finish(false,'Die Frist ist abgelaufen. Die Spur ist kalt und der Zirkel hat die Beute außer Landes gebracht.','h_time');return true;}
 function finish(win,text,clip){
@@ -159,7 +164,11 @@ function finish(win,text,clip){
 }
 function line(c,k){
   if(isFinal()){const t=(FOV[c.id]||FINAL)[k];return {text:t,clips:['f_'+c.id+'_'+k]};}
-  const y=S.route[S.i+1],ov=OV[c.id+'>'+y];let text=ov?ov[k]:CITY[y].hint[k];const clips=['d_'+c.id+'_'+k+'_'+y];
+  const y=S.route[S.i+1],ov=OV[c.id+'>'+y];
+  if(LVL==='s'&&('x_'+c.id+'_'+y) in DUR){const v=S.culprit[c.attr];
+    if(k===c.trait)return {text:CLUE[c.attr][v],clips:['t_'+c.id+'_'+Object.keys(CLUE[c.attr]).indexOf(v)]};
+    if(k===(c.trait+1)%3)return {text:CITY[y].hard,clips:['x_'+c.id+'_'+y]};
+    return {text:c.nix,clips:['n_'+c.id]};}let text=ov?ov[k]:CITY[y].hint[k];const clips=['d_'+c.id+'_'+k+'_'+y];
   if(c.trait===k){const v=S.culprit[c.attr];text+=' '+CLUE[c.attr][v];clips.push('t_'+c.id+'_'+Object.keys(CLUE[c.attr]).indexOf(v));}
   return {text,clips};
 }
@@ -201,7 +210,8 @@ function travel(to,h,correct){
 }
 function issue(){
   const m=matches();if(S.over||S.busy||!S.started||m.length!==1)return;
-  advance(1);S.warrant=m[0].name;
+  const LC=LV[LVL];if(S.warrant&&(!LC.re||S.warrant===m[0].name))return;
+  advance(S.warrant?LC.re:1);S.warrant=m[0].name;
   say('Direktorin Halberg','per Funk','Der Haftbefehl ist unterschrieben. Ich hoffe, Sie sind sich sicher.'+(isFinal()?'':'\n\n(Folgen Sie jetzt der Spur weiter, bis sie endet. Dort kommt es zum Zugriff.)'),['h_warrant']);
   timeUp();render();
 }
@@ -214,7 +224,10 @@ function render(){
   $('leftchip').classList.toggle('warn',rest<24);
   const pct=Math.round(rest/(DEAD-START)*100);$('barfill').style.width=pct+'%';$('pbar').setAttribute('aria-valuenow',pct);
   const A=$('actions');A.innerHTML='';
-  if(!S.started){setTab('q');const b=box('Neuer Auftrag');b.append(btn('Fall annehmen','',begin,'big'));A.append(b);}
+  const LC=LV[LVL];
+  if(!S.started){setTab('q');const b=box('Neuer Auftrag');const g=document.createElement('div');g.className='lv';g.setAttribute('role','group');g.setAttribute('aria-label','Schwierigkeit');
+    Object.keys(LV).forEach(k=>{const x=document.createElement('button');x.type='button';x.textContent=LV[k].n;x.setAttribute('aria-pressed',k===LVL);x.onclick=()=>{LVL=k;try{localStorage.setItem('am-stufe',k);}catch(e){}newGame();};g.append(x);});
+    const p=document.createElement('p');p.className='hint';p.textContent=LC.d;b.append(g,p,btn('Fall annehmen','',begin,'big'));A.append(b);}
   else if(S.over){setTab('q');const b=box(S.win?'Fall gelöst':'Fall verloren');b.append(btn('Neuen Fall starten','',newGame,'big'));A.append(b);}
   else{
     const q=box('Befragen');
@@ -234,15 +247,16 @@ function render(){
     s.onchange=()=>{S.profile[a[0]]=s.value;render();};F.append(l,s);});}
   ATTR.forEach(a=>{$('p-'+a[0]).value=S.profile[a[0]];});
   const m=matches(),L=$('sus');L.innerHTML='';
-  SUSPECTS.forEach(s=>{const li=document.createElement('li');li.textContent=s.name;if(!m.includes(s))li.className='out';L.append(li);});
+  SUSPECTS.forEach(s=>{const li=document.createElement('li');li.textContent=s.name;if(LC.count&&!m.includes(s))li.className='out';L.append(li);});
   $('count').textContent=m.length===1?'Ein Name bleibt übrig: '+m[0].name+'.':m.length===0?'Niemand passt auf dieses Profil. Prüf deine Einträge.':m.length+' Verdächtige passen noch'+(m.length<=3?': '+m.map(x=>x.name).join(', ')+'.':'.');
+  $('count').hidden=!LC.count;
   $('tab-n').textContent='Notizen'+(S.notes.length?' '+S.notes.length:'');
-  $('warrant').disabled=S.over||S.busy||!S.started||m.length!==1;
+  $('warrant').disabled=S.over||S.busy||!S.started||m.length!==1||(S.warrant&&!LC.re);
   $('stamp').hidden=!S.warrant;$('stamp').textContent=S.warrant?'Haftbefehl ausgestellt auf: '+S.warrant:'';
   const N=$('notes');N.innerHTML='';
   S.notes.forEach((n,i)=>{const li=document.createElement('li');if(i===0&&S.notes.length>lastNote)li.className='new';const b=document.createElement('b');b.textContent=n.stadt+' · '+n.zeuge;li.append(b,n.text);N.append(li);});
   lastNote=S.notes.length;
-  $('empty').hidden=S.notes.length>0;$('empty').textContent='Noch keine Hinweise. Befrag die Zeugen in '+CITY[S.route[0]].name+'.';
+  $('empty').hidden=S.notes.length>0;$('empty').textContent=LC.notes?'Noch keine Hinweise. Befrag die Zeugen in '+CITY[S.route[0]].name+'.':'Auf Stufe Schwer schreibt niemand für Sie mit. Merken Sie sich, was die Zeugen sagen.';
 }
 function setTab(t){document.body.dataset.tab=t;document.querySelectorAll('#tabs button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.t===t));}
 document.querySelectorAll('#tabs button').forEach(b=>b.onclick=()=>setTab(b.dataset.t));
