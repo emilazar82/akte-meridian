@@ -94,10 +94,15 @@ body[data-mode="title"] .actions,body[data-mode="title"] .dialog{visibility:hidd
 .hot.hub{width:15%;z-index:3}
 .hot.hub span{position:absolute;left:50%;top:100%;transform:translate(-50%,-30%);white-space:nowrap;font:600 clamp(10px,1.5cqw,15px)/1 var(--body);color:#fff3c4;background:rgba(8,12,20,.72);padding:3px 7px;border-radius:99px;pointer-events:none}
 .hot.hub::after{width:12px;height:12px;margin:-6px}
-.hot.ring::before{content:"";position:absolute;inset:18%;border-radius:50%;border:2px solid var(--amber);animation:ringp 1.1s ease-out infinite}
-.hot.ring::after{background:var(--amber);animation:shake .25s linear infinite}
-@keyframes ringp{from{transform:scale(.4);opacity:1}to{transform:scale(1.5);opacity:0}}
-@keyframes shake{25%{transform:translateX(-2px) rotate(-8deg)}75%{transform:translateX(2px) rotate(8deg)}}
+.hot.ring::after{display:none}
+.hot.hub::after{width:8px;height:8px;margin:-4px}
+.phone{position:absolute;left:34.6%;bottom:30.5%;width:10.4%;height:15%;z-index:2;pointer-events:none;background:url(szenen/buero.webp) 38.62% 64.12%/961.5% 666.7% no-repeat;-webkit-mask-image:radial-gradient(ellipse at 50% 52%,#000 52%,transparent 72%);mask-image:radial-gradient(ellipse at 50% 52%,#000 52%,transparent 72%);animation:vib 1.6s linear infinite;transform-origin:50% 80%}
+.phone::after{content:"";position:absolute;inset:0}
+@keyframes vib{0%,52%,100%{transform:none}4%,12%,20%,28%,36%,44%{transform:translate(-1.6%,-1%) rotate(-3.2deg)}8%,16%,24%,32%,40%,48%{transform:translate(1.6%,-1%) rotate(3.2deg)}}
+.waves{position:absolute;left:39.8%;bottom:45%;width:7%;aspect-ratio:1;z-index:2;pointer-events:none;transform:translateX(-50%)}
+.waves i{position:absolute;left:50%;bottom:0;width:60%;aspect-ratio:2;border:2px solid #ffe2a0;border-bottom:0;border-radius:999px 999px 0 0;transform:translateX(-50%);opacity:0;animation:wav 1.6s ease-out infinite}
+.waves i:nth-child(2){width:100%;animation-delay:.18s}
+@keyframes wav{0%{opacity:0;transform:translateX(-50%) translateY(30%) scale(.6)}15%,45%{opacity:.9}60%,100%{opacity:0;transform:translateX(-50%) translateY(-40%) scale(1)}}
 .bars{position:absolute;inset:0;z-index:300;pointer-events:none;background:repeating-linear-gradient(90deg,transparent 0 5.2%,rgba(10,12,16,.92) 5.2% 5.5%,#5d6470 5.5% 6.1%,#2a2f38 6.1% 6.6%,transparent 6.6% 7.2%),linear-gradient(#2a2f38,#2a2f38) 0 12%/100% 1.6% no-repeat,linear-gradient(#2a2f38,#2a2f38) 0 86%/100% 1.6% no-repeat}
 .bars.slam{animation:slam .9s cubic-bezier(.6,0,.3,1) 1.4s both}
 @keyframes slam{from{transform:translateX(-70%)}80%{transform:translateX(1.2%)}to{transform:none}}
@@ -130,7 +135,7 @@ body[data-mode="title"] .actions,body[data-mode="title"] .dialog{visibility:hidd
 .lst{display:flex;flex-direction:column;gap:8px;font-size:15px}.lst p{margin:0}.lst .big{font-family:var(--display);font-size:28px;color:var(--amber)}.lst ul{margin:0;padding-left:18px}
 .row{display:flex;flex-direction:column;gap:2px;padding:10px 12px;border-radius:8px;background:#0e1524;border-left:5px solid #7be0a2}.row.no{border-left-color:var(--red)}.row small{color:var(--muted)}
 @media (max-width:900px),(max-height:520px){.mug{grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}.sheet h2{font-size:18px}.hud .tog{font-size:11px;padding:3px 8px}}
-@media (prefers-reduced-motion:reduce){.hot.ring::before,.hot.ring::after,.bars.slam,.fig.pris{animation:none!important}}
+@media (prefers-reduced-motion:reduce){.phone,.waves i,.bars.slam,.fig.pris{animation:none!important}.waves i{opacity:.8}}
 .chip.tick{animation:tick .6s ease}
 @keyframes tick{30%{transform:scale(1.12);box-shadow:0 0 14px rgba(242,180,85,.7)}}
 @media (prefers-reduced-motion:reduce){.item,.card,.raid,.chip.tick{animation:none!important}.fig{translate:none}}
@@ -234,8 +239,10 @@ const calm=matchMedia('(prefers-reduced-motion: reduce)').matches;
 const ALT={flughafen:'Leere Ankunftshalle eines Flughafens bei Nacht',buero:'Gemaltes Detektivbüro bei Nacht: Ermittlerin am Schreibtisch mit Telefon, Pinnwand und Aktenschrank',zelle:'Gemalte Arrestzelle im Zellentrakt des Büros Meridian'};
 Object.values(CITY).forEach(c=>c.orte.forEach((o,k)=>{ALT[c.id+k]='Gemalter Schauplatz: '+o.ort+' in '+c.name+', '+c.land;}));
 let S, typing=null, voiceOn=true, camOn='A', lastNote=0, aq=[], cur=null, DEAD=0;
+const AU=new Audio(),SIL='data:audio/wav;base64,UklGRrQBAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YZABAACAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICA';AU.preload='auto';
+{const u=()=>{if(AU._ok||cur)return;AU._ok=1;AU.src=SIL;const p=AU.play();if(p&&p.then)p.then(()=>{if(!cur)AU.pause();}).catch(()=>{AU._ok=0;});};document.addEventListener('touchend',u,true);document.addEventListener('click',u,true);}
 function stopAudio(){aq=[];if(cur){cur.onended=null;cur.onerror=null;try{cur.pause();}catch(e){}cur=null;}}
-function nextClip(){const id=aq.shift();if(!id){cur=null;$('face').classList.remove('talk');return;}if(!(id in DUR)){nextClip();return;}cur=new Audio('ton/'+id+'.mp3');cur.onended=nextClip;cur.onerror=nextClip;const p=cur.play();if(p&&p.catch)p.catch(()=>{aq=[];cur=null;$('face').classList.remove('talk');});}
+function nextClip(){const id=aq.shift();if(!id){cur=null;$('face').classList.remove('talk');return;}if(!(id in DUR)){nextClip();return;}cur=AU;AU.src='ton/'+id+'.mp3';cur.onended=nextClip;cur.onerror=nextClip;const p=cur.play();if(p&&p.catch)p.catch(()=>{aq=[];cur=null;$('face').classList.remove('talk');});}
 __MID__
 /* ---------- Fall würfeln ---------- */
 function shuffle(a){a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
@@ -305,7 +312,7 @@ function stageFig(){
   const want=S.started&&!S.decoy&&c&&c.id===cityNow().id?id:'';
   const base=want+'|'+camOn+'|'+S.i+'|'+LVL;
   if(base!==figKey){figKey=base;
-    document.querySelectorAll('.fig:not(.out),.item,.card,.hot').forEach(f=>{if(f.classList.contains('fig')){f.classList.add('out');setTimeout(()=>f.remove(),500);}else f.remove();});
+    document.querySelectorAll('.fig:not(.out),.item,.card,.hot,.phone,.waves,.bars').forEach(f=>{if(f.classList.contains('fig')){f.classList.add('out');setTimeout(()=>f.remove(),500);}else f.remove();});
     if(want){const o=c.orte[k],P=FIG[id]||{w:[66,5,58],t:'',e:[]},st=$('cam'+camOn).querySelector('.stg');
       const w=mkFig(o.p,P.w,0,P.t,'Mit '+o.zeuge+' sprechen, '+o.rolle,o.zeuge+', '+o.rolle+' am Schauplatz '+o.ort,()=>ask(k),'wit');
       if(LC.mark){const bub=document.createElement('i');bub.className='bub';bub.textContent='!';w.append(bub);}
