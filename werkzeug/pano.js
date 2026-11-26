@@ -2,6 +2,7 @@
 const PANO=__PANO__,PJAGD=__PJAGD__;
 Object.assign(PANO,__PANO2__);Object.assign(PJAGD,__PJAGD2__);
 const PPR={kiste:[172,159,1],stapel:[181,295,.86],fass:[161,229,1],bank:[318,248,.5],sperre:[260,179,1],saeule:[183,411,0]};
+Object.assign(PPR,__PPR2__);
 const PTON={nacht:'rgba(28,44,96,.36)',dunkel:'rgba(22,30,58,.3)',abend:'rgba(120,60,30,.2)',warm:'rgba(150,90,20,.16)'};
 const PIMG={};function pimg(s){return PIMG[s]||(PIMG[s]=Object.assign(new Image(),{src:s}));}
 const pseq=(n,k)=>Array.from({length:k},(x,i)=>pimg('pano/'+n+String(i).padStart(2,'0')+'.webp'));
@@ -39,7 +40,7 @@ addEventListener('keydown',e=>{const P=PA;if(!P||$('sheet'))return;const t=docum
 addEventListener('keyup',e=>{const P=PA;if(!P)return;const c=e.code;if(c==='ArrowLeft'||c==='KeyA')P.keys.L=0;if(c==='ArrowRight'||c==='KeyD')P.keys.R=0;});
 function panoStep(P,dt){const H=P.H,HW=.034,frozen=P.T&&P.T.st!=='run';
   let mv=frozen?0:(P.keys.R?1:0)-(P.keys.L?1:0),top0=.72;
-  if(!mv&&H.target!=null&&!frozen){const d=H.target-H.x;if(Math.abs(d)<.014){H.target=null;const a=H.after;H.after=null;if(a)a();}else{mv=d>0?1:-1;top0=Math.min(.72,Math.abs(d)*5+.1);}}
+  if(!mv&&H.target!=null&&!frozen){const d=H.target-H.x;if(Math.abs(d)<.014){if(H.y===0||H.on){H.target=null;const a=H.after;H.after=null;if(a)a();}}else{mv=d>0?1:-1;top0=Math.min(.72,Math.abs(d)*5+.1);}}
   if(mv)H.dir=mv;
   const feet=-H.y,blk=d=>P.objs.some(o=>{if(!o.solid)return false;const e=o.w/2+HW,n=Math.abs(H.x+d-o.x);return n<e&&n<Math.abs(H.x-o.x)&&feet<o.h-.012;});
   if(mv&&blk(mv*.006)){H.vx=0;H.run=0;if(H.target!=null&&(H.y===0||H.on))panoJump();}
@@ -106,7 +107,7 @@ function panoStage(id,k,c,F){[0,1,2].forEach(j=>{if(PANO[c.id+j])pimg('pano/'+c.
 // Verfolgung am Zielort
 function panoChase(city,done){const J=PJAGD[city];S.busy=true;S.pend=null;render();
   say('Direktorin Halberg','per Funk','Da läuft sie! Hinterher. Springen Sie über alles, was im Weg steht.');
-  const world=13.2,props=[];let x=1.9;const kinds=['kiste','sperre','fass','bank'];for(let i=0;x<world-.8;i++){props.push([kinds[i%4],+x.toFixed(2)]);x+=.72+((i*37)%5)*.07;}
+  const world=13.2,props=[];let x=1.9;const kinds=J.props||['kiste','sperre','fass','bank'];for(let i=0;x<world-.8;i++){props.push([kinds[(i*5)%kinds.length],+x.toFixed(2)]);x+=.72+((i*37)%5)*.07;}
   const cb=win=>{panoKill();S.busy=false;figKey='';if(win){done();render();return;}
     S.busy=true;S.pend=done;advance(3);if(timeUp()){S.pend=null;S.busy=false;render();return;}
     say('Direktorin Halberg','per Funk','Entwischt! Die Person ist in einer Seitengasse verschwunden. Das hat uns 3 Stunden gekostet.\n\nUnsere Leute haben sie wieder im Blick. Nehmen Sie die Verfolgung noch einmal auf.');render();};
