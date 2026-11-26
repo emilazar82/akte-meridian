@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Akte Meridian – Probeszene: Wien als Panorama zum Laufen und Springen</title>
+<meta name="description" content="Probeszene für Akte Meridian: Die Ermittlerin läuft und springt durch ein breites gemaltes Panorama der Wiener Ringstraße bei Nacht, spricht mit einem Zeugen und sucht ein Fundstück.">
+<meta name="robots" content="noindex">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;600&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+<style>
+:root{--ink:#0b101b;--amber:#f2b455;--teal:#58c7bd;--text:#eef1f6;--muted:#aeb7c8;--line:#2b3b5a}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;overflow:hidden;background:var(--ink);color:var(--text);font-family:"IBM Plex Sans",system-ui,sans-serif;-webkit-tap-highlight-color:transparent}
+#cv{position:fixed;inset:0;width:100%;height:100%;display:block;touch-action:none;cursor:pointer}
+header{position:fixed;left:0;right:0;top:0;display:flex;justify-content:space-between;align-items:center;gap:10px;padding:8px 12px;padding-top:max(8px,env(safe-area-inset-top));background:linear-gradient(rgba(11,16,27,.85),rgba(11,16,27,0));pointer-events:none;z-index:3}
+h1{font-family:"Playfair Display",Georgia,serif;font-size:clamp(15px,2.4vw,22px);margin:0;color:var(--amber);white-space:nowrap}
+h1 small{display:block;font-family:"IBM Plex Sans",sans-serif;font-weight:400;font-size:12px;color:var(--muted)}
+header a{pointer-events:auto;color:var(--text);font-size:13px;border:1px solid var(--line);border-radius:99px;padding:6px 12px;text-decoration:none;background:rgba(13,19,32,.8);white-space:nowrap}
+#task{position:fixed;left:50%;transform:translateX(-50%);top:max(58px,calc(env(safe-area-inset-top) + 58px));max-width:min(92%,560px);background:rgba(13,19,32,.86);border:1px solid var(--line);border-radius:10px;padding:6px 12px;font-size:13.5px;text-align:center;z-index:3;pointer-events:none}
+#task b{color:var(--amber)}
+#dlg{position:fixed;left:50%;transform:translateX(-50%);top:max(104px,calc(env(safe-area-inset-top) + 104px));width:min(94%,620px);display:flex;gap:10px;align-items:flex-start;background:rgba(13,19,32,.94);border:1px solid var(--amber);border-radius:12px;padding:10px 12px;z-index:4;font-size:14.5px;line-height:1.4}
+#dlg[hidden]{display:none}
+#dlg img{width:56px;height:56px;border-radius:8px;object-fit:cover;flex:none;background:#39465c}
+#dlg b{display:block;color:var(--teal);font-size:13px}
+.pad{position:fixed;bottom:calc(14px + env(safe-area-inset-bottom));display:flex;gap:10px;z-index:5}
+.pad.l{left:14px}.pad.r{right:14px}
+.pad button{width:64px;height:64px;border-radius:50%;border:2px solid rgba(242,180,85,.8);background:rgba(13,19,32,.72);color:var(--amber);font-size:26px;line-height:1;cursor:pointer;touch-action:none;user-select:none;-webkit-user-select:none}
+.pad button.on{background:var(--amber);color:#1c1405}
+.pad button.act{border-color:var(--teal);color:var(--teal);font-size:13px;font-weight:600;font-family:inherit}
+.pad button.act[hidden]{display:none}
+@media (max-height:420px){.pad button{width:54px;height:54px}#dlg{top:78px;font-size:13px;padding:6px 10px}#dlg img{width:40px;height:40px}#task{font-size:12px;top:44px}h1 small{display:none}}
+</style>
+</head>
+<body>
+<canvas id="cv" role="img" aria-label="Spielszene: Die Ermittlerin läuft durch ein gemaltes Panorama der Wiener Ringstraße bei Nacht, vorbei an Straßenbahn, Kunsthistorischem Museum und Kaffeehaus"></canvas>
+<header><h1>Akte Meridian<small>Probeszene · Wien, Ringstraße</small></h1><a href="../">Zurück zum Spiel</a></header>
+<p id="task" aria-live="polite"></p>
+<div id="dlg" hidden><img id="dimg" alt=""><div><b id="dwho"></b><span id="dtxt"></span></div></div>
+<div class="pad l"><button id="bl" type="button" aria-label="Nach links laufen">◀</button><button id="br" type="button" aria-label="Nach rechts laufen">▶</button></div>
+<div class="pad r"><button id="ba" type="button" class="act" aria-label="Ansprechen" hidden>Reden</button><button id="bj" type="button" aria-label="Springen">▲</button></div>
+<script>
+const $=id=>document.getElementById(id),cv=$('cv'),g=cv.getContext('2d');
+const calm=matchMedia('(prefers-reduced-motion: reduce)').matches;
+const ld=s=>{const i=new Image();i.src=s;return i;};
+const pano=ld('pano_wien.webp'),IDLE=ld('h_idle.webp'),JUMP=ld('h_jump.webp'),RUN=[0,1,2,3,4,5].map(k=>ld('h_run'+k+'.webp'));
+const PR={kiste:[172,159],stapel:[181,295],fass:[161,229],bank:[318,248],sperre:[260,179],saeule:[183,411]};
+Object.keys(PR).forEach(k=>PR[k].push(ld('p_'+k+'.webp')));
+const WIT=ld('../figuren/gruber.webp'),COP=ld('../figuren/x_police.webp');
+// Einheiten: 1 = Bildhoehe. Welt ist 3 breit (Panorama 3:1).
+const WORLD=3,GY=.905,HH=.31,U=HH/520;           // U: Welt-Einheiten je Sprite-Pixel
+// Requisiten: [Name, x-Mitte, fest?, Hoehe der Standflaeche als Anteil]
+const OBJ=[['saeule',.30,0,1],['kiste',.62,1,1],['bank',1.02,1,.5],['sperre',1.62,1,1],['fass',2.02,1,1],['kiste',2.2,1,1],['stapel',2.36,1,.86],['saeule',2.72,0,1]].map(o=>{const p=PR[o[0]];return {n:o[0],x:o[1],solid:o[2],w:p[0]*U*.84,h:p[1]*U*o[3],dw:p[0]*U,dh:p[1]*U,im:p[2]};});
+const H={x:.18,y:0,vy:0,dir:1,run:0,dist:0,on:null,target:null,after:null};
+const witness={x:1.33},cop={x:1.76};
+let W=1,Hh=1,k=1,cam=0,keys={},last=0,talked=false,found=false,dlgT=0,tint=new Map();
+function size(){const d=Math.min(2,devicePixelRatio||1);cv.width=Math.round(innerWidth*d);cv.height=Math.round(innerHeight*d);Hh=cv.height;W=cv.width/Hh;}
+addEventListener('resize',size);size();
+function task(){$('task').innerHTML=!talked?'<b>Auftrag:</b> Laufen Sie zum Nachtwächter vor dem Museum und sprechen Sie ihn an.':!found?'<b>Auftrag:</b> Weiter rechts liegt ein Koffer auf den Kisten. Springen Sie hinauf.':'<b>Geschafft.</b> So könnte jede Szene im Spiel funktionieren.';}
+task();
+const AU=new Audio();let unlocked=false;
+function unlock(){if(unlocked)return;unlocked=true;AU.src='data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQAAAAA=';AU.play().catch(()=>{});}
+function say(who,txt,img,clip,alt){$('dwho').textContent=who;$('dtxt').textContent=txt;const i=$('dimg');if(img){i.src=img;i.alt=alt||'';i.hidden=false;}else i.hidden=true;$('dlg').hidden=false;$('task').style.visibility='hidden';dlgT=performance.now()+Math.max(4500,txt.length*75);
+  if(clip){try{AU.src='../ton/'+clip+'.mp3';AU.play().catch(()=>{});}catch(e){}}}
+function talk(){if(Math.abs(H.x-witness.x)>.2)return;talked=true;H.dir=witness.x>H.x?1:-1;say('Leopold Gruber · Nachtwächter','Sie brauchte Euro und fragte nach einem Turm aus Eisen, dreihundert Meter hoch.','../portraits/gruber.webp','d_wien_0_paris','Porträt: Leopold Gruber, Nachtwächter');task();}
+function jump(){unlock();if(H.y===0||H.on){H.vy=-1.12;H.on=null;if(H.y===0)H.y=-.0001;}}
+// Eingabe
+addEventListener('keydown',e=>{unlock();if(['ArrowLeft','ArrowRight','ArrowUp','Space'].includes(e.code))e.preventDefault();keys[e.code]=1;H.target=null;if(e.code==='Space'||e.code==='ArrowUp'||e.code==='KeyW')jump();if(e.code==='Enter'||e.code==='KeyE')talk();});
+addEventListener('keyup',e=>{keys[e.code]=0;});
+function hold(b,code){const on=e=>{e.preventDefault();unlock();keys[code]=1;H.target=null;b.classList.add('on');},off=()=>{keys[code]=0;b.classList.remove('on');};b.addEventListener('pointerdown',on);['pointerup','pointercancel','pointerleave'].forEach(n=>b.addEventListener(n,off));b.addEventListener('contextmenu',e=>e.preventDefault());}
+hold($('bl'),'ArrowLeft');hold($('br'),'ArrowRight');
+$('bj').addEventListener('pointerdown',e=>{e.preventDefault();jump();});
+$('ba').addEventListener('click',()=>{unlock();talk();});
+cv.addEventListener('pointerdown',e=>{unlock();const r=cv.getBoundingClientRect(),wx=cam+(e.clientX-r.left)/r.height;H.target=Math.max(.06,Math.min(WORLD-.06,wx));H.after=null;
+  if(Math.abs(wx-witness.x)<.09){H.target=witness.x+(H.x<witness.x?-.13:.13);H.after=talk;}});
+// Feststehendes: liefert Oberkante, wenn x ueber dem Objekt liegt
+const HW=.034;
+function topAt(x){let t=0,o=null;OBJ.forEach(b=>{if(b.solid&&Math.abs(x-b.x)<b.w/2+HW*.8&&b.h>t){t=b.h;o=b;}});return [t,o];}
+function step(dt){
+  let mv=(keys.ArrowRight||keys.KeyD?1:0)-(keys.ArrowLeft||keys.KeyA?1:0);
+  if(!mv&&H.target!=null){const d=H.target-H.x;if(Math.abs(d)<.012){H.target=null;const a=H.after;H.after=null;if(a)a();}else mv=d>0?1:-1;}
+  H.run=mv;if(mv)H.dir=mv;
+  if(mv){const nx=Math.max(.05,Math.min(WORLD-.05,H.x+mv*.72*dt)),feet=-H.y;let blocked=false;
+    OBJ.forEach(b=>{if(!b.solid)return;const edge=b.w/2+HW;if(Math.abs(nx-b.x)<edge&&Math.abs(nx-b.x)<Math.abs(H.x-b.x)&&feet<b.h-.012)blocked=true;});
+    if(blocked){if(H.target!=null&&(H.y===0||H.on))jump();}else{H.dist+=Math.abs(nx-H.x);H.x=nx;}}
+  // Schwerkraft und Landen
+  const [top,o]=topAt(H.x);
+  if(H.on&&(!o||o!==H.on)){H.on=null;}
+  if(H.y<0&&!H.on||H.vy<0){const py=H.y;H.vy+=2.75*dt;H.y+=H.vy*dt;
+    if(H.vy>0&&top>0&&-py>=top-.004&&-H.y<=top){H.y=-top;H.vy=0;H.on=o;}
+    else if(H.y>=0){H.y=0;H.vy=0;H.on=null;}}
+  else if(H.on){H.y=-H.on.h;}
+  else if(H.y<0){H.vy=0.0001;}
+  if(!found&&H.on&&H.on.n==='stapel'){found=true;say('Fundstück','Ein Koffer mit einem Bordkarten-Abschnitt: Strecke VIE → CDG. Die gesuchte Person ist nach Paris geflogen.',null,'h_item');task();}
+  const want=Math.max(0,Math.min(WORLD-W,H.x-W*(H.dir>0?.4:.6)));cam+=(want-cam)*Math.min(1,dt*(calm?60:3.2));
+  if(W>=WORLD)cam=(WORLD-W)/2;
+  $('ba').hidden=!(Math.abs(H.x-witness.x)<.2&&H.y===0);
+  if(dlgT&&performance.now()>dlgT){dlgT=0;$('dlg').hidden=true;$('task').style.visibility='';}
+}
+function tinted(im){if(!im.complete||!im.naturalWidth)return null;let c=tint.get(im);if(c)return c;c=document.createElement('canvas');c.width=im.naturalWidth;c.height=im.naturalHeight;const x=c.getContext('2d');x.drawImage(im,0,0);x.globalCompositeOperation='source-atop';x.fillStyle='rgba(28,44,96,.36)';x.fillRect(0,0,c.width,c.height);tint.set(im,c);return c;}
+function shadow(x,w,y){g.fillStyle='rgba(0,0,0,.42)';g.beginPath();g.ellipse((x-cam)*Hh,(GY+(y||0))*Hh,w*Hh,.012*Hh,0,0,6.3);g.fill();}
+function spr(im,x,feetY,h,flip,bob){const c=tinted(im);if(!c)return;const w=h*c.width/c.height;g.save();g.translate((x-cam)*Hh,(GY+feetY)*Hh);if(flip)g.scale(-1,1);if(bob)g.scale(1,bob);g.drawImage(c,-w/2*Hh,-h*Hh,w*Hh,h*Hh);g.restore();}
+const rain=Array.from({length:70},()=>[Math.random(),Math.random(),.6+Math.random()*.6]);
+function draw(now){
+  g.fillStyle='#0b101b';g.fillRect(0,0,cv.width,cv.height);
+  if(pano.complete&&pano.naturalWidth){const s=pano.naturalHeight;g.drawImage(pano,cam*s,0,Math.min(W,WORLD)*s,s,0,0,Math.min(W,WORLD)*Hh,Hh);}
+  // Reihenfolge: Deko hinten, Figuren, feste Dinge, Ermittlerin
+  OBJ.filter(o=>!o.solid).forEach(o=>{shadow(o.x,o.dw*.5);spr(o.im,o.x,0,o.dh);});
+  const br=1+Math.sin(now/900)*.006;
+  shadow(witness.x,.05);spr(WIT,witness.x,0,HH*1.02,H.x<witness.x,br);
+  shadow(cop.x,.05);spr(COP,cop.x,0,HH,true,1+Math.sin(now/1100)*.006);
+  if(!talked){const bx=(witness.x-cam)*Hh,by=(GY-HH*1.14+Math.sin(now/300)*.006)*Hh;g.fillStyle='#f2b455';g.beginPath();g.arc(bx,by,.022*Hh,0,6.3);g.fill();g.fillStyle='#1c1405';g.font='700 '+(.03*Hh)+'px "IBM Plex Sans",sans-serif';g.textAlign='center';g.textBaseline='middle';g.fillText('!',bx,by+.002*Hh);}
+  OBJ.filter(o=>o.solid).forEach(o=>{shadow(o.x,o.dw*.5);spr(o.im,o.x,0,o.dh);});
+  shadow(H.x,.05*(1+H.y*1.5));
+  const air=H.y<0&&!H.on;
+  if(air)spr(JUMP,H.x,H.y+.035,306*U,H.dir<0);
+  else if(H.run)spr(RUN[Math.floor(H.dist/.058)%6],H.x,H.y,491*U,H.dir<0);
+  else spr(IDLE,H.x,H.y,HH,H.dir<0,br);
+  // Ausgaenge an den Raendern
+  [[.0,'‹ Kaffeehaus am Ring','left'],[WORLD,'Flughafen Schwechat ›','right']].forEach(e=>{const x=(e[0]-cam)*Hh;if(x<-300||x>cv.width+300)return;g.font='600 '+(.026*Hh)+'px "IBM Plex Sans",sans-serif';g.textAlign=e[2];g.textBaseline='middle';const tw=g.measureText(e[1]).width+.04*Hh,xx=e[2]==='left'?x:x-tw;g.fillStyle='rgba(13,19,32,.85)';g.fillRect(xx,.5*Hh,tw,.055*Hh);g.strokeStyle='#f2b455';g.lineWidth=2;g.strokeRect(xx,.5*Hh,tw,.055*Hh);g.fillStyle='#f6e7c8';g.fillText(e[1],e[2]==='left'?x+.02*Hh:x-.02*Hh,.528*Hh);});
+  if(!calm){g.strokeStyle='rgba(190,210,255,.22)';g.lineWidth=Math.max(1,Hh/700);g.beginPath();rain.forEach(r=>{const y=((r[1]+now/1000*r[2])%1)*Hh,x=((r[0]*1.3-cam*.2)%1.3+1.3)%1.3*cv.width-0.1*cv.width;g.moveTo(x,y);g.lineTo(x-.012*Hh,y+.035*Hh);});g.stroke();}
+}
+function loop(now){const dt=Math.min(.05,Math.max(0,(now-last)/1000));last=now;step(dt);draw(now);requestAnimationFrame(loop);}
+requestAnimationFrame(t=>{last=t;loop(t);});
+window.__st=()=>({x:H.x,y:H.y,on:H.on&&H.on.n,talked,found,cam,W});
+</script>
+</body>
+</html>
