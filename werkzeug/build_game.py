@@ -154,7 +154,7 @@ const LAND='__MASK__';
 const DAYS=['Mo','Di','Mi','Do','Fr','Sa','So'], START=9, QH=2;
 const LV={l:{n:'Leicht',buf:30,dec:3,len:6,notes:1,count:1,re:1,mark:1,xh:1,d:'Viel Zeit, 4 Reiseziele. Zeugen sind markiert, das Notizbuch schreibt mit.'},
  m:{n:'Mittel',buf:16,dec:4,len:6,notes:1,count:1,re:6,mark:0,xh:1,d:'Knappe Frist, 5 Reiseziele. Den richtigen Zeugen finden Sie selbst.'},
- s:{n:'Schwer',buf:6,dec:5,len:7,notes:0,count:0,re:0,mark:0,xh:2,d:'7 Städte, 6 Reiseziele, kaum Zeitpuffer. Sie notieren selbst und haben nur einen Haftbefehl.'}};
+ s:{n:'Schwer',buf:6,dec:5,len:7,notes:0,count:0,re:0,mark:0,xh:2,d:'7 Städte, kryptische Hinweise, kaum Zeitpuffer. Sie notieren selbst und haben nur einen Haftbefehl.'}};
 let LVL='l',LEN=6;try{const v=localStorage.getItem('am-stufe');if(LV[v])LVL=v;}catch(e){}
 const $=id=>document.getElementById(id);
 const calm=matchMedia('(prefers-reduced-motion: reduce)').matches;
