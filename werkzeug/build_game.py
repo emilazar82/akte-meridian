@@ -241,13 +241,13 @@ function makeRoute(start){
 }
 function step(t,h){t+=h;const hr=t%24;if(hr>=23)t+=24-hr+7;else if(hr<7)t+=7-hr;return t;}
 function newGame(fix){
-  const LC=LV[LVL];LEN=LC.len;let route=null,start;const starts=Object.keys(CITY).filter(k=>CITY[k].start);
+  const LC=LV[LVL],NA=(typeof META==='object'&&fix)?META.arrested.length:0,BUF=Math.max(4,LC.buf-3*NA);LEN=LC.len;let route=null,start;const starts=Object.keys(CITY).filter(k=>CITY[k].start);
   const ps=fix;
   while(!route){start=ps&&CITY[ps]&&CITY[ps].start?ps:starts[Math.floor(Math.random()*starts.length)];route=makeRoute(start);}
   const others=Object.keys(CITY).filter(k=>!route.includes(k));
-  const ziele=route.slice(0,-1).map(()=>shuffle(others).slice(0,LC.dec));
+  const ziele=route.slice(0,-1).map(()=>shuffle(others).slice(0,Math.min(others.length,LC.dec+Math.floor(NA/3))));
   let t=0;for(let w=0;w<LEN;w++){let u=START;for(let i=0;i<LEN-1;i++){for(let q=0;q<3;q++)u=step(u,QH);if(i===w)u=step(u,1);u=step(u,hours(route[i],route[i+1]));}
-    if(w===LEN-1)u=step(u,1);u=step(u,QH);u=step(u,QH);t=Math.max(t,u);}DEAD=LC.buf>10?Math.ceil((t+LC.buf)/6)*6:t+LC.buf;
+    if(w===LEN-1)u=step(u,1);u=step(u,QH);u=step(u,QH);t=Math.max(t,u);}DEAD=BUF>10?Math.ceil((t+BUF)/6)*6:t+BUF;
   document.body.dataset.lv=LVL;
   S={route,ziele,i:0,decoy:null,t:START,seen:{},notes:[],profile:{},warrant:null,culprit:SUSPECTS[Math.floor(Math.random()*SUSPECTS.length)],fin:0,xs:{},hs:{},items:route.slice(0,-1).map((r,n)=>({k:Math.floor(Math.random()*3),h:Math.floor(Math.random()*3),type:(LVL==='s'||!CITY[route[n+1]].cur||Math.random()<.5)?'ticket':'beleg',found:false})),over:false,started:false,busy:false,scene:null};
   ATTR.forEach(a=>S.profile[a[0]]='');lastNote=0;
@@ -267,7 +267,7 @@ function begin(){MODE='case';document.body.dataset.mode='case';S.started=true;$(
   say('Direktorin Halberg','Büro Meridian',c.start.text+'\n\nDer Tatort gehört Ihnen. Hören Sie sich in der Stadt um.'+gh(),['h_brief_'+c.id,'h_begin']);render();}
 function fmt(t){const d=Math.floor(t/24),h=Math.floor(t%24);return DAYS[d%7]+' '+String(h).padStart(2,'0')+':00';}
 function advance(h){const b=S.t;S.t+=h;const hr=S.t%24;let slept=false;if(hr>=23){S.t+=24-hr+7;slept=true;}else if(hr<7){S.t+=7-hr;slept=true;}return slept;}
-function matches(){return SUSPECTS.filter(s=>ATTR.every(a=>!S.profile[a[0]]||s[a[0]]===S.profile[a[0]]));}
+function matches(){return SUSPECTS.filter(s=>!(typeof META==='object'&&MODE==='case'&&META.arrested.includes(s.name))&&ATTR.every(a=>!S.profile[a[0]]||s[a[0]]===S.profile[a[0]]));}
 function initials(n){return n.replace('Dr. ','').split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();}
 function say(name,role,text,clips,pslug){
   const w=$('who');w.textContent=name;const sp=document.createElement('span');sp.textContent=role;w.append(sp);
@@ -442,7 +442,7 @@ function render(){
     s.onchange=()=>{S.profile[a[0]]=s.value;render();};F.append(l,s);});}
   ATTR.forEach(a=>{$('p-'+a[0]).value=S.profile[a[0]];});
   const m=matches(),L=$('sus');L.innerHTML='';
-  SUSPECTS.forEach(s=>{const li=document.createElement('li');li.textContent=s.name;if(LC.count&&!m.includes(s))li.className='out';L.append(li);});
+  SUSPECTS.forEach(s=>{const li=document.createElement('li');const inh=META.arrested.includes(s.name);li.textContent=s.name+(inh?' (in Haft)':'');if(inh||(LC.count&&!m.includes(s)))li.className='out';L.append(li);});
   $('count').textContent=m.length===1?'Ein Name bleibt übrig: '+m[0].name+'.':m.length===0?'Niemand passt auf dieses Profil. Prüf deine Einträge.':m.length+' Verdächtige passen noch'+(m.length<=3?': '+m.map(x=>x.name).join(', ')+'.':'.');
   $('count').hidden=!LC.count;
   $('tab-n').textContent='Notizen'+(S.notes.length?' '+S.notes.length:'');
