@@ -30,6 +30,8 @@ COMPACT=r"""
 .tabs{display:none}
 .cam{transition:opacity 1.1s ease,transform 1.1s cubic-bezier(.3,.1,.2,1)}
 .cam.zoom{transform:scale(1.32)}
+.cam{pointer-events:none}.cam.on{pointer-events:auto}
+.place,.vig,.titlecard.gone{pointer-events:none}
 .mv{container-type:size}
 .stg{position:absolute;left:50%;top:50%;width:max(100cqw,177.78cqh);aspect-ratio:16/9;transform:translate(-50%,-50%)}
 .fig{position:absolute;padding:0;margin:0;border:0;background:none;cursor:pointer;transform:translateX(-50%);-webkit-tap-highlight-color:transparent;animation:figin .7s cubic-bezier(.2,.8,.3,1) both;z-index:2}
