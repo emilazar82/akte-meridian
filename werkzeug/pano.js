@@ -67,6 +67,7 @@ function panoDraw(P,now){const g=P.g,Hh=P.Hh,H=P.H,U=P.U,cv=P.cv;
   const shadow=(x,w,y)=>{g.fillStyle='rgba(0,0,0,.4)';g.beginPath();g.ellipse((x-P.cam)*Hh,(P.gy+(y||0))*Hh,Math.max(.001,w)*Hh,.012*Hh,0,0,6.3);g.fill();};
   g.fillStyle='#0b101b';g.fillRect(0,0,cv.width,cv.height);
   const im=P.img,tw=3*P.z;
+  if(!(im.complete&&im.naturalWidth)){const gr=g.createLinearGradient(0,0,0,Hh);gr.addColorStop(0,'#16213a');gr.addColorStop(1,'#0b101b');g.fillStyle=gr;g.fillRect(0,0,cv.width,cv.height);g.fillStyle='#22304f';g.fillRect(0,P.gy*Hh-.05*Hh,cv.width,Hh);g.fillStyle='rgba(238,241,246,.75)';g.font='600 '+Math.max(12,.035*Hh)+'px "IBM Plex Sans",sans-serif';g.textAlign='center';g.textBaseline='middle';g.fillText('Szene wird geladen'+'.'.repeat(1+Math.floor(now/400)%3),cv.width/2,Hh*.4);}
   if(im.complete&&im.naturalWidth){const s=im.naturalHeight;for(let t=Math.floor(P.cam/tw);t*tw<P.cam+P.W&&t*tw<P.world+tw;t++){g.save();g.translate(Math.round((t*tw-P.cam)*Hh),0);if(t%2){g.translate(tw*Hh,0);g.scale(-1,1);}g.drawImage(im,0,s*(1-1/P.z),im.naturalWidth,s/P.z,0,0,tw*Hh+1,Hh);g.restore();}}
   const br=1+Math.sin(now/900)*.006,fs=Math.max(11,.03*Hh);
   P.objs.filter(o=>!o.solid).forEach(o=>{shadow(o.x,o.dw*.5);spr(o.im,o.x,0,o.dh);});
@@ -89,7 +90,9 @@ function panoDraw(P,now){const g=P.g,Hh=P.Hh,H=P.H,U=P.U,cv=P.cv;
     if(T.st!=='run'){g.fillStyle='rgba(8,12,22,.5)';g.fillRect(0,0,cv.width,cv.height);g.fillStyle=T.st==='caught'?'#f2b455':'#e8796b';g.font='700 '+(.13*Hh)+'px "Playfair Display",Georgia,serif';g.fillText(T.st==='caught'?'Gefasst!':'Entwischt!',cv.width/2,Hh*.45);}}}
 function panoLoop(now){const P=PA;if(!P)return;P.raf=requestAnimationFrame(panoLoop);const dt=Math.min(.05,Math.max(0,(now-P.last)/1000));P.last=now;if(P.cv.height<4||Math.abs(P.cv.getBoundingClientRect().height*Math.min(2,devicePixelRatio||1)-P.cv.height)>2)P.size();panoStep(P,dt);panoDraw(P,now);}
 // Schauplatz als Panorama aufbauen
-function panoStage(id,k,c,F){const cfg=PANO[id],o=c.orte[k],LC=LV[LVL],ents=[],key=S.i+'_'+k;
+function panoPre(){if(!PSP)PSP={idle:pimg('pano/h_idle.webp'),run:pseq('v_run',36),jmp:pseq('v_jmp',24),lnd:pseq('v_lnd',11),dieb:pseq('v_dieb',21)};}
+setTimeout(panoPre,2500);
+function panoStage(id,k,c,F){[0,1,2].forEach(j=>{if(PANO[c.id+j])pimg('pano/'+c.id+j+'.webp');});if(PJAGD[c.id]&&isFinal())pimg('pano/'+PJAGD[c.id].img+'.webp');const cfg=PANO[id],o=c.orte[k],LC=LV[LVL],ents=[],key=S.i+'_'+k;
   ents.push({t:'fig',x:cfg.w,im:pimg('figuren/'+o.p+'.webp'),name:o.zeuge+' · '+o.rolle,verb:'Reden',act:()=>ask(k),mark:()=>LC.mark&&!S.seen[key]});
   (cfg.e||[]).forEach(e=>{if(!EX[e[0]])return;ents.push({t:'fig',x:e[1],flip:e[2]?true:null,s:.97,im:pimg('figuren/'+e[0]+'.webp'),name:EX[e[0]][0],verb:'Reden',act:()=>askExtra(e[0])});});
   (cfg.h||[]).forEach((h,n)=>ents.push({t:'hot',x:h[1],y:h[3]||.22,name:h[0],verb:'Ansehen',off:.06,r:.07,act:()=>look(id,n),seen:()=>S.hs[id+n]}));
