@@ -81,6 +81,55 @@ body[data-lv="s"] .hot::after{display:none}
 .item{width:8%;animation:glint 1.3s ease-in-out infinite,hopi 1.3s ease-in-out infinite}
 @keyframes hopi{50%{margin-bottom:1.2%}}
 @media (prefers-reduced-motion:reduce){.hot::after{animation:none!important;opacity:.8}}
+#hubchip{display:none}
+body:not([data-mode="case"]) #hubchip{display:inline-flex}
+body:not([data-mode="case"]) .hud .chip:not(#hubchip),body:not([data-mode="case"]) .casebtn,body:not([data-mode="case"]) .akte,body:not([data-mode="case"]) .tabs,body:not([data-mode="case"]) .bar{display:none!important}
+body:not([data-mode="case"]) .main{grid-template-columns:minmax(0,1fr)}
+body:not([data-mode="case"]) .actions{display:block!important}
+body:not([data-mode="case"]) .box{display:flex!important}
+.startbtn{margin-top:18px;min-width:min(260px,70%);justify-content:center;pointer-events:auto}
+body[data-mode="title"] .actions,body[data-mode="title"] .dialog{visibility:hidden}
+.hud .tog{white-space:nowrap}
+.hot.hub{width:15%;z-index:3}
+.hot.hub span{position:absolute;left:50%;top:100%;transform:translate(-50%,-30%);white-space:nowrap;font:600 clamp(10px,1.5cqw,15px)/1 var(--body);color:#fff3c4;background:rgba(8,12,20,.72);padding:3px 7px;border-radius:99px;pointer-events:none}
+.hot.hub::after{width:12px;height:12px;margin:-6px}
+.hot.ring::before{content:"";position:absolute;inset:18%;border-radius:50%;border:2px solid var(--amber);animation:ringp 1.1s ease-out infinite}
+.hot.ring::after{background:var(--amber);animation:shake .25s linear infinite}
+@keyframes ringp{from{transform:scale(.4);opacity:1}to{transform:scale(1.5);opacity:0}}
+@keyframes shake{25%{transform:translateX(-2px) rotate(-8deg)}75%{transform:translateX(2px) rotate(8deg)}}
+.bars{position:absolute;inset:0;z-index:300;pointer-events:none;background:repeating-linear-gradient(90deg,transparent 0 5.2%,rgba(10,12,16,.92) 5.2% 5.5%,#5d6470 5.5% 6.1%,#2a2f38 6.1% 6.6%,transparent 6.6% 7.2%),linear-gradient(#2a2f38,#2a2f38) 0 12%/100% 1.6% no-repeat,linear-gradient(#2a2f38,#2a2f38) 0 86%/100% 1.6% no-repeat}
+.bars.slam{animation:slam .9s cubic-bezier(.6,0,.3,1) 1.4s both}
+@keyframes slam{from{transform:translateX(-70%)}80%{transform:translateX(1.2%)}to{transform:none}}
+.fig.pris.pace{animation:figin .7s both,pace 11s ease-in-out .7s infinite}
+@keyframes pace{0%,100%{margin-left:0}50%{margin-left:5%}}
+.fig.pris.arrive{animation:arrive 1.6s cubic-bezier(.3,.7,.3,1) both}
+@keyframes arrive{from{opacity:0;transform:translateX(-50%) translateX(-60cqw)}to{opacity:1;transform:translateX(-50%)}}
+.sheet{position:fixed;inset:0;z-index:60;background:rgba(5,8,14,.74);display:flex;align-items:center;justify-content:center;padding:10px;animation:rise .25s ease both}
+.sheet .in{width:100%;max-width:820px;max-height:100%;overflow:auto;background:linear-gradient(180deg,#1b2740,#141c2e);border:1px solid var(--line);border-radius:12px;padding:12px 16px 16px;box-shadow:0 24px 70px rgba(0,0,0,.7)}
+.sheet .sh{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:10px}
+.sheet h2{font-family:var(--display);font-size:22px;margin:0;color:var(--amber)}
+.sheet h3{font-family:var(--type);font-size:13px;letter-spacing:.14em;text-transform:uppercase;color:var(--amber);margin:14px 0 8px}
+.offers{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px}
+.offer{display:flex;flex-direction:column;gap:6px;text-align:left;padding:14px;border-radius:8px;border:0;border-left:8px solid #b5483a;background:linear-gradient(180deg,#fbf3dc,#ecdcb4);color:#2a2113;cursor:pointer;font-family:var(--type);transition:transform .15s}
+.offer:hover,.offer:focus-visible{transform:translateY(-3px) rotate(-.6deg)}
+.offer small{font-size:11px;letter-spacing:.16em;color:#7a2f25}.offer b{font-family:var(--display);font-size:20px;line-height:1.15}.offer span{font-size:13px}.offer em{font-size:12px;color:#6b5a3a;font-style:normal}
+.in.corkin{background:#7a5532 radial-gradient(circle at 20% 30%,rgba(255,220,160,.12),transparent 40%);border:10px solid #3d2a17}
+.in.corkin h2,.in.corkin h3{color:#ffe9b8}
+.pins{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:14px 12px;padding:6px 2px}
+.pin{position:relative;background:#fbf3dc;color:#2a2113;padding:14px 10px 10px;font-family:var(--type);font-size:13px;line-height:1.35;box-shadow:0 4px 10px rgba(0,0,0,.45);transform:rotate(var(--r,0deg));display:flex;flex-direction:column;gap:4px}
+.pin::before{content:"";position:absolute;left:50%;top:-5px;width:12px;height:12px;margin-left:-6px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#ff8a7a,#a8261b);box-shadow:0 2px 3px rgba(0,0,0,.5)}
+.pin small{font-size:10.5px;letter-spacing:.08em;color:#7a2f25;text-transform:uppercase}.pin.fund{background:#e7f1e4}
+.nopin,.stmp{color:#ffe9b8;font-family:var(--type);font-size:14px}.stmp{border:2px solid #ffb199;color:#ffb199;display:inline-block;padding:4px 10px;transform:rotate(-2deg)}
+.mug{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+.mg{position:relative;background:#fbf3dc;color:#2a2113;padding:6px 6px 8px;text-align:center;font-family:var(--type);box-shadow:0 4px 10px rgba(0,0,0,.45);display:flex;flex-direction:column;gap:2px;overflow:hidden}
+.mg img{width:100%;aspect-ratio:1;object-fit:cover;object-position:50% 4%;background:#39465c}
+.mg b{font-size:12px}.mg small{font-size:10.5px;color:#6b5a3a}
+.mg.off{opacity:.45}.mg.in small{color:#a8261b;font-weight:700}
+.mg.in::after{content:"";position:absolute;left:-10%;right:-10%;top:38%;height:3px;background:#a8261b;transform:rotate(-24deg)}
+.lst{display:flex;flex-direction:column;gap:8px;font-size:15px}.lst p{margin:0}.lst .big{font-family:var(--display);font-size:28px;color:var(--amber)}.lst ul{margin:0;padding-left:18px}
+.row{display:flex;flex-direction:column;gap:2px;padding:10px 12px;border-radius:8px;background:#0e1524;border-left:5px solid #7be0a2}.row.no{border-left-color:var(--red)}.row small{color:var(--muted)}
+@media (max-width:900px),(max-height:520px){.mug{grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}.sheet h2{font-size:18px}.hud .tog{font-size:11px;padding:3px 8px}}
+@media (prefers-reduced-motion:reduce){.hot.ring::before,.hot.ring::after,.bars.slam,.fig.pris{animation:none!important}}
 .chip.tick{animation:tick .6s ease}
 @keyframes tick{30%{transform:scale(1.12);box-shadow:0 0 14px rgba(242,180,85,.7)}}
 @media (prefers-reduced-motion:reduce){.item,.card,.raid,.chip.tick{animation:none!important}.fig{translate:none}}
@@ -173,7 +222,7 @@ const LV={l:{n:'Leicht',buf:30,dec:3,len:6,notes:1,count:1,re:1,mark:1,xh:1,d:'V
 let LVL='l',LEN=6;try{const v=localStorage.getItem('am-stufe');if(LV[v])LVL=v;}catch(e){}
 const $=id=>document.getElementById(id);
 const calm=matchMedia('(prefers-reduced-motion: reduce)').matches;
-const ALT={flughafen:'Leere Ankunftshalle eines Flughafens bei Nacht'};
+const ALT={flughafen:'Leere Ankunftshalle eines Flughafens bei Nacht',buero:'Gemaltes Detektivbüro bei Nacht: Ermittlerin am Schreibtisch mit Telefon, Pinnwand und Aktenschrank',zelle:'Gemalte Arrestzelle im Zellentrakt des Büros Meridian'};
 Object.values(CITY).forEach(c=>c.orte.forEach((o,k)=>{ALT[c.id+k]='Gemalter Schauplatz: '+o.ort+' in '+c.name+', '+c.land;}));
 let S, typing=null, voiceOn=true, camOn='A', lastNote=0, aq=[], cur=null, DEAD=0;
 function stopAudio(){aq=[];if(cur){cur.onended=null;cur.onerror=null;try{cur.pause();}catch(e){}cur=null;}}
@@ -191,9 +240,9 @@ function makeRoute(start){
   return go([start]);
 }
 function step(t,h){t+=h;const hr=t%24;if(hr>=23)t+=24-hr+7;else if(hr<7)t+=7-hr;return t;}
-function newGame(){
+function newGame(fix){
   const LC=LV[LVL];LEN=LC.len;let route=null,start;const starts=Object.keys(CITY).filter(k=>CITY[k].start);
-  const ps=new URLSearchParams(location.search).get('start');
+  const ps=fix;
   while(!route){start=ps&&CITY[ps]&&CITY[ps].start?ps:starts[Math.floor(Math.random()*starts.length)];route=makeRoute(start);}
   const others=Object.keys(CITY).filter(k=>!route.includes(k));
   const ziele=route.slice(0,-1).map(()=>shuffle(others).slice(0,LC.dec));
@@ -214,7 +263,7 @@ function newGame(){
 }
 const cityNow=()=>CITY[S.route[S.i]], isFinal=()=>S.i===LEN-1;
 const gh=()=>LV[LVL].mark&&S.items[S.i]&&S.items[S.i].k===0&&!S.items[S.i].found&&!isFinal()?'\n\n(Hier liegt etwas am Boden.)':'';
-function begin(){S.started=true;$('titlecard').classList.add('gone');const c=cityNow();setPlace(c.orte[0].ort,c.name+', '+c.land);
+function begin(){MODE='case';document.body.dataset.mode='case';S.started=true;$('titlecard').classList.add('gone');const c=cityNow();setPlace(c.orte[0].ort,c.name+', '+c.land);
   say('Direktorin Halberg','Büro Meridian',c.start.text+'\n\nDer Tatort gehört Ihnen. Hören Sie sich in der Stadt um.'+gh(),['h_brief_'+c.id,'h_begin']);render();}
 function fmt(t){const d=Math.floor(t/24),h=Math.floor(t%24);return DAYS[d%7]+' '+String(h).padStart(2,'0')+':00';}
 function advance(h){const b=S.t;S.t+=h;const hr=S.t%24;let slept=false;if(hr>=23){S.t+=24-hr+7;slept=true;}else if(hr<7){S.t+=7-hr;slept=true;}return slept;}
@@ -243,7 +292,7 @@ function mkFig(slug,p,flip,ton,label,alt,fn,cls){
   const im=new Image();im.src=(has?'figuren/':'portraits/')+slug+'.webp';im.alt=alt;im.draggable=false;if(flip&&has)im.classList.add('flip');
   b.append(im);b._act=fn;b.onclick=e=>{if(!e||e.detail===0)fn();};return b;}
 function stageFig(){
-  if(!S)return;const id=S.scene||'',city=id.slice(0,-1),k=+id.slice(-1),c=CITY[city],LC=LV[LVL];
+  if(!S)return;if(MODE!=='case'){stageHub();return;}const id=S.scene||'',city=id.slice(0,-1),k=+id.slice(-1),c=CITY[city],LC=LV[LVL];
   const want=S.started&&!S.decoy&&c&&c.id===cityNow().id?id:'';
   const base=want+'|'+camOn+'|'+S.i+'|'+LVL;
   if(base!==figKey){figKey=base;
@@ -363,6 +412,7 @@ function issue(){
 function btn(label,small,fn,cls){const b=document.createElement('button');b.type='button';b.className='act'+(cls?' '+cls:'');const s=document.createElement('span');s.textContent=label;b.append(s);if(small){const m=document.createElement('small');m.textContent=small;b.append(m);}b.onclick=fn;b.disabled=!!S.busy;return b;}
 function box(title,cls){const d=document.createElement('div');d.className='box '+(cls||'q');const h=document.createElement('h2');h.textContent=title;d.append(h);return d;}
 function render(){
+  if(MODE!=='case'){renderHub();stageFig();return;}
   const c=cityNow();
   $('clock').textContent=fmt(S.t);
   const rest=Math.max(0,DEAD-S.t);$('remain').textContent=rest+' h';$('frist').textContent=fmt(DEAD);
@@ -373,7 +423,7 @@ function render(){
   if(!S.started){setTab('q');const b=box('Neuer Auftrag');const g=document.createElement('div');g.className='lv';g.setAttribute('role','group');g.setAttribute('aria-label','Schwierigkeit');
     Object.keys(LV).forEach(k=>{const x=document.createElement('button');x.type='button';x.textContent=LV[k].n;x.setAttribute('aria-pressed',k===LVL);x.onclick=()=>{LVL=k;try{localStorage.setItem('am-stufe',k);}catch(e){}newGame();};g.append(x);});
     const p=document.createElement('p');p.className='hint';p.textContent=LC.d;b.append(g,p,btn('Fall annehmen','',begin,'big'));A.append(b);}
-  else if(S.over){setTab('q');const b=box(S.win?'Fall gelöst':'Fall verloren');b.append(btn('Neuen Fall starten','',newGame,'big'));A.append(b);}
+  else if(S.over){setTab('q');const b=box(S.win?'Fall gelöst':'Fall verloren');b.append(btn('Zurück ins Büro','',backToOffice,'big'));A.append(b);}
   else{
     const q=box('Befragen');
     if(S.decoy)q.append(btn('Am Flughafen umhören','1 h',()=>ask(0)));
@@ -407,12 +457,13 @@ function setTab(t){document.body.dataset.tab=t;document.querySelectorAll('#tabs 
 document.querySelectorAll('#tabs button').forEach(b=>b.onclick=()=>setTab(b.dataset.t));
 $('warrant').onclick=issue;
 $('voice').onclick=()=>{voiceOn=!voiceOn;$('voice').setAttribute('aria-pressed',voiceOn);$('voice').textContent=voiceOn?'Stimmen an':'Stimmen aus';if(!voiceOn){stopAudio();$('face').classList.remove('talk');}};
-newGame();
+__META__
+boot();
 if(!calm)requestAnimationFrame(fxLoop);
 '''
 FOV['lima'][2]='Die Person, die Sie suchen, kann nicht weit sein. Beeilen Sie sich.' if 'f_lima_2' in dur and False else 'Vor zehn Minuten wollte jemand hier etwas Wertvolles schätzen lassen. Die Person kann nicht weit sein.'
 J=lambda o:json.dumps(o,ensure_ascii=False,separators=(',',':'))
-js=js.replace('__CLUE__',J(D['CLUE'])).replace('__FINAL__',J(D['FINAL'])).replace('__SUS__',sus).replace('__CITY__',J(cities)).replace('__OV__',J(OV)).replace('__FOV__',J(FOV)).replace('__FX__',J(FX)).replace('__DUR__',J(dur)).replace('__FIG__',J(FIG)).replace('__FIGS__',J(FIGS)).replace('__EX__',J(EX)).replace('__HOT__',J(HOT)).replace('__MASK__',mask).replace('__MID__',mid)
+js=js.replace('__CLUE__',J(D['CLUE'])).replace('__FINAL__',J(D['FINAL'])).replace('__SUS__',sus).replace('__CITY__',J(cities)).replace('__OV__',J(OV)).replace('__FOV__',J(FOV)).replace('__FX__',J(FX)).replace('__DUR__',J(dur)).replace('__FIG__',J(FIG)).replace('__FIGS__',J(FIGS)).replace('__EX__',J(EX)).replace('__HOT__',J(HOT)).replace('__MASK__',mask).replace('__MID__',mid).replace('__META__',open('meta.js').read())
 head=head.replace('<h1>Akte Meridian<small>Fall 1 · Das Salzfass von Wien</small></h1>','<h1>Akte Meridian<small>Fall</small></h1>').replace('Frist Sa 18:00 · noch <b id="remain">129 h</b>','Frist <b id="frist">Sa 18:00</b> · noch <b id="remain">129 h</b>').replace('<em>Fall 1 · Das Salzfass von Wien</em>','<em>Fall</em>')
 head=head.replace('<div class="left">','<nav class="tabs" id="tabs" aria-label="Bereiche"><button type="button" data-t="q" aria-pressed="true">Befragen</button><button type="button" data-t="r" aria-pressed="false">Reisen</button><button type="button" data-t="p" aria-pressed="false">Profil</button><button type="button" data-t="n" id="tab-n" aria-pressed="false">Notizen</button></nav>\n    <div class="left">')
 head=head.replace('<section>\n        <h2>Täterprofil</h2>','<section id="sec-p">\n        <h2>Täterprofil</h2>').replace('<section>\n        <h2>Kartei: Der Zirkel</h2>','<section id="sec-k">\n        <h2>Kartei: Der Zirkel</h2>').replace('<section>\n        <h2>Notizbuch</h2>','<section id="sec-n">\n        <h2>Notizbuch</h2>')

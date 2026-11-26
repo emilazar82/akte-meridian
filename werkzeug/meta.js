@@ -1,0 +1,72 @@
+/* ---------- Büro, Laufbahn, Zellentrakt ---------- */
+let MODE='title',META={cases:[],arrested:[],money:0,intro:0,lvl:'l',neu:''},RING=false,AC=null,tk=0;
+try{const m=JSON.parse(localStorage.getItem('am-meta')||'null');if(m&&m.cases)META=Object.assign(META,m);}catch(e){}
+if(LV[META.lvl])LVL=META.lvl;
+const save=()=>{try{localStorage.setItem('am-meta',JSON.stringify(META));}catch(e){}};
+const RANKS=[[0,'Anwärterin'],[1,'Ermittlerin'],[3,'Sonderermittlerin'],[5,'Chefermittlerin'],[8,'Leitende Ermittlerin']];
+const solved=()=>META.cases.filter(c=>c.w).length;
+const rank=n=>RANKS.filter(r=>n>=r[0]).pop()[1];
+const zslug=n=>'z_'+n.split(' ').pop().toLowerCase();
+const PRIS={brandt:'Glück gehabt, Frau Ermittlerin. Beim nächsten Mal bin ich schneller.',montecalvo:'Ein Missverständnis. Mein Anwalt klärt das beim Abendessen.',holt:'Wie lange dauert das hier? Ich habe einen Liegeplatz, der kostet.',wolkow:'Sie haben gut gespielt. Aber die Partie ist noch nicht zu Ende.',oduya:'Ohne die Gitter würden Sie nicht so nah herankommen.',ravensburg:'Ich habe nur den Wagen gefahren. Na gut, und den Rest auch.',lindqvist:'Vesper holt uns nicht heraus. Vesper holt nie jemanden heraus.',aldani:'Diese Zelle ist eine Zumutung. Kein Samt, kein Spiegel, kein Publikum.'};
+const HUB=[['Telefon',39,37,'tel'],['Pinnwand',16,72,'board'],['Aktenschrank',88,35,'cab'],['Dienstmarke',92,86,'badge']];
+const CELLPOS=[[12,7,60,0],[25,13,54,1],[37,6,62,0],[49,14,54,1],[60,6,60,0],[72,13,56,1],[83,6,60,1],[93,14,52,0]];
+function ring(){if(!voiceOn)return;try{AC=AC||new (window.AudioContext||window.webkitAudioContext)();const t=AC.currentTime;[0,.5].forEach(o=>{[440,480].forEach(f=>{const os=AC.createOscillator(),g=AC.createGain();os.frequency.value=f;os.type='sine';g.gain.setValueAtTime(0,t+o);g.gain.linearRampToValueAtTime(.07,t+o+.03);g.gain.setValueAtTime(.07,t+o+.33);g.gain.linearRampToValueAtTime(0,t+o+.38);os.connect(g);g.connect(AC.destination);os.start(t+o);os.stop(t+o+.4);});});}catch(e){}}
+function el(tag,cls,txt){const e=document.createElement(tag);if(cls)e.className=cls;if(txt!=null)e.textContent=txt;return e;}
+function sheet(title,body,cls){closeSheet();const s=el('div','sheet');s.id='sheet';s.setAttribute('role','dialog');s.setAttribute('aria-label',title);const i=el('div','in '+(cls||''));const h=el('div','sh');h.append(el('h2','',title));const x=el('button','tog','Schließen');x.type='button';x.onclick=closeSheet;h.append(x);i.append(h,body);s.append(i);const t0=performance.now();s.addEventListener('click',e=>{if(performance.now()-t0<500){e.stopPropagation();e.preventDefault();}},true);s.onclick=e=>{if(e.target===s)closeSheet();};document.body.append(s);x.focus();}
+function closeSheet(){const s=$('sheet');if(s)s.remove();}
+function hubSay(text,clips){say('Direktorin Halberg','am Telefon',text,clips);}
+function office(kind,promo,done){MODE='office';document.body.dataset.mode='office';S.started=false;S.over=false;S.busy=false;S.decoy=null;$('titlecard').classList.add('gone');document.querySelectorAll('.stampbig,.card,.raid').forEach(x=>x.remove());figKey='';
+  setScene('buero','Büro Meridian','Zentrale');RING=!done;
+  if(kind==='win')hubSay('Willkommen zurück. Saubere Arbeit. Die Akte wandert in den Schrank, die Prämie auf Ihr Konto.'+(promo?'\n\nUnd noch etwas: Sie sind befördert worden. Glückwunsch. Ihr neuer Rang: '+rank(solved())+'.':'')+(done?'\n\nDas war das letzte Mitglied. Der Zirkel ist zerschlagen. Nur Vesper Nachtigall fehlt uns noch. Aber das ist eine andere Akte.':''),['h_win'].concat(promo?['h_rank']:[],done?['h_end']:[]));
+  else if(kind==='lose')hubSay('Das ging daneben. Die Akte bleibt offen. Schlafen Sie eine Nacht darüber, dann machen wir weiter.',['h_lose']);
+  else if(!META.intro){META.intro=1;save();hubSay('Willkommen im Büro Meridian. Sehen Sie sich in Ruhe um: Pinnwand, Aktenschrank, Zellentrakt. Wenn das Telefon klingelt, wird es ernst.',['h_office']);}
+  else say('Büro Meridian','Zentrale','Das Telefon klingelt.');
+  render();if(done)setTimeout(ending,1200);}
+function cell(){MODE='cell';document.body.dataset.mode='cell';figKey='';stopAudio();setScene('zelle','Zellentrakt','Büro Meridian');const n=META.arrested.length;
+  if(META.neu)hubSay('Im Zellentrakt wird es voller. So gefällt mir das.',['h_cell']);
+  else say('Zellentrakt','Büro Meridian',n?n+' von 8 Mitgliedern des Zirkels sitzen ein. Tippen Sie eine Person an.':'Die Zelle ist leer. Noch.');render();}
+function stageHub(){const key=MODE+'|'+camOn+'|'+META.arrested.length+'|'+RING;if(key===figKey)return;figKey=key;
+  document.querySelectorAll('.fig:not(.out),.item,.card,.hot,.bars').forEach(f=>f.remove());
+  const st=$('cam'+camOn).querySelector('.stg');
+  if(MODE==='office')HUB.forEach(h=>{const b=el('button','hot hub'+(h[3]==='tel'&&RING?' ring':''));b.type='button';b.style.left=h[1]+'%';b.style.bottom=h[2]+'%';b.setAttribute('aria-label',h[0]);const f=()=>hub(h[3]);b._act=f;b.onclick=e=>{if(!e||e.detail===0)f();};b.append(el('span','',h[0]));st.append(b);});
+  if(MODE==='cell'){META.arrested.forEach((n,i)=>{const p=CELLPOS[i%8],sl=zslug(n),f=()=>{say(n,'Zirkel, in Gewahrsam',PRIS[sl.slice(2)]||'Kein Kommentar.',[],sl);};
+      const b=mkFig(sl,p,p[3],'dunkel',n+' ansprechen',n+', Mitglied des Zirkels, in der Zelle',f,'ext pris'+(i%3===1?' pace':'')+(META.neu===n?' arrive':''));st.append(b);});
+    const bars=el('i','bars'+(META.neu?' slam':''));st.append(bars);if(META.neu){META.neu='';save();}}
+}
+function hub(w){if(w==='tel'){if(RING)offers();else say('Büro Meridian','Zentrale','Die Leitung ist still.');}else if(w==='board')board();else if(w==='cab')cabinet();else if(w==='badge')badge();else if(w==='cell')cell();}
+function offers(){const starts=shuffle(Object.keys(CITY).filter(k=>CITY[k].start)).slice(0,3),first=!META.cases.length;
+  hubSay(first?'Büro Meridian, Halberg am Apparat. Der Zirkel hat wieder zugeschlagen. Auf meinem Tisch liegen drei Akten. Suchen Sie sich einen Fall aus.':'Halberg hier. Es gibt neue Arbeit für Sie. Drei Akten, Ihre Wahl.',[first?'h_call':'h_call2']);
+  const g=el('div','offers');starts.forEach(id=>{const c=CITY[id],b=el('button','offer');b.type='button';b.append(el('small','','AKTE · '+c.name.toUpperCase()),el('b','',c.start.fall),el('span','','Gestohlen: '+c.start.beute+'.'),el('em','','Prämie ab '+BASE[LVL].toLocaleString('de-DE')+' · Stufe '+LV[LVL].n));b.onclick=()=>{closeSheet();startCase(id);};g.append(b);});
+  sheet('Welchen Fall übernehmen Sie?',g);}
+const BASE={l:1000,m:1800,s:3000};
+function startCase(id){RING=false;newGame(id);const free=SUSPECTS.filter(s=>!META.arrested.includes(s.name));S.culprit=(free.length?free:SUSPECTS)[Math.floor(Math.random()*(free.length||SUSPECTS.length))];begin();}
+function backToOffice(){const win=!!S.win,rest=Math.max(0,DEAD-S.t),p=win?BASE[LVL]+25*rest:0,c0=CITY[S.route[0]],before=rank(solved());
+  META.cases.unshift({f:c0.start.fall,c:c0.name,b:c0.start.beute,w:win,who:S.culprit.name,ha:S.warrant||'',rest,lvl:LVL,p,d:new Date().toLocaleDateString('de-DE')});
+  let done=false;if(win){META.money+=p;if(!META.arrested.includes(S.culprit.name)){META.arrested.push(S.culprit.name);META.neu=S.culprit.name;}done=META.arrested.length>=SUSPECTS.length&&!META.end;if(done)META.end=1;}
+  save();office(win?'win':'lose',rank(solved())!==before,done);}
+function ending(){const d=el('div','lst');d.append(el('p','','Alle acht Mitglieder des Zirkels sitzen im Zellentrakt. Die Beute aus '+solved()+' Fällen ist sichergestellt.'),el('p','','Ihr Rang: '+rank(solved())+' · Prämien gesamt: '+META.money.toLocaleString('de-DE')),el('p','','Sie können weiter Fälle übernehmen. Vesper Nachtigall ist noch frei.'));sheet('Der Zirkel ist zerschlagen',d);}
+function board(){const d=el('div','cork'),act=MODE==='case';
+  if(act){const c0=CITY[S.route[0]];d.append(el('h3','','Laufender Fall: '+c0.start.fall));const g=el('div','pins');
+    if(!S.notes.length)g.append(el('p','nopin',LV[LVL].notes?'Noch keine Hinweise. Befragen Sie Zeugen und sehen Sie sich um.':'Auf Stufe Schwer hängt hier nur, was Sie sich selbst merken.'));
+    S.notes.slice().reverse().forEach((n,i)=>{const p=el('div','pin'+(n.zeuge==='Fundstück'?' fund':''));p.style.setProperty('--r',((i*37)%7-3)+'deg');p.append(el('small','',n.stadt+' · '+n.zeuge),el('span','',n.text));g.append(p);});d.append(g);
+    if(S.warrant)d.append(el('p','stmp','Haftbefehl: '+S.warrant));}
+  d.append(el('h3','','Der Zirkel'));const m=act&&LV[LVL].count?matches():SUSPECTS,z=el('div','mug');
+  SUSPECTS.forEach(s=>{const a=META.arrested.includes(s.name),c=el('div','mg'+(a?' in':'')+(!a&&!m.includes(s)?' off':''));const im=new Image();im.src='figuren/'+zslug(s.name)+'.webp';im.alt='Zirkel-Mitglied '+s.name;im.loading='lazy';c.append(im,el('b','',s.name),el('small','',a?'in Gewahrsam':(act&&LV[LVL].count&&!m.includes(s)?'passt nicht':'auf freiem Fuß')));z.append(c);});
+  d.append(z);sheet('Pinnwand',d,'corkin');}
+function cabinet(){const d=el('div','lst');if(!META.cases.length)d.append(el('p','','Der Schrank ist leer. Ihr erster Fall wartet am Telefon.'));
+  META.cases.forEach(c=>{const r=el('div','row '+(c.w?'ok':'no'));r.append(el('b','',c.f),el('span','',c.w?'Gelöst · festgenommen: '+c.who+' · '+c.rest+' h vor Fristende':'Offen · entkommen: '+c.who+(c.ha&&c.ha!==c.who?' · Haftbefehl auf '+c.ha:'')),el('small','',c.d+' · '+c.c+' · Stufe '+LV[c.lvl].n+(c.w?' · Prämie '+c.p.toLocaleString('de-DE'):'')));d.append(r);});sheet('Aktenschrank',d);}
+function badge(){const n=solved(),nx=RANKS.find(r=>r[0]>n),d=el('div','lst');d.append(el('p','big',rank(n)),el('p','',n+' gelöste Fälle von '+META.cases.length+' · '+META.arrested.length+' von 8 Zirkel-Mitgliedern gefasst'),el('p','','Prämien gesamt: '+META.money.toLocaleString('de-DE')),el('p','',nx?'Nächster Rang: '+nx[1]+' ab '+nx[0]+' gelösten Fällen':'Höchster Rang erreicht.'));
+  const loot=META.cases.filter(c=>c.w);if(loot.length){d.append(el('h3','','Sichergestellte Beute'));const u=el('ul','');loot.forEach(c=>u.append(el('li','',c.b.charAt(0).toUpperCase()+c.b.slice(1)+' ('+c.c+')')));d.append(u);}sheet('Dienstmarke',d);}
+function settings(){const d=el('div','lst'),g=el('div','lv');g.setAttribute('role','group');g.setAttribute('aria-label','Schwierigkeit');const info=el('p','hint',LV[LVL].d);
+  Object.keys(LV).forEach(k=>{const x=el('button','',LV[k].n);x.type='button';x.setAttribute('aria-pressed',k===(META.lvl||LVL));x.onclick=()=>{META.lvl=k;save();if(MODE!=='case')LVL=k;g.querySelectorAll('button').forEach(b=>b.setAttribute('aria-pressed',b===x));info.textContent=LV[k].d+(MODE==='case'?' Gilt ab dem nächsten Fall.':'');};g.append(x);});
+  d.append(el('h3','','Schwierigkeit'),g,info,el('h3','','Spielstand'));const r=el('button','act','Spielstand zurücksetzen');r.type='button';let arm=false;r.onclick=()=>{if(!arm){arm=true;r.textContent='Wirklich alles löschen? Noch einmal tippen.';return;}META={cases:[],arrested:[],money:0,intro:0,lvl:LVL,neu:''};save();closeSheet();office();};d.append(r);sheet('Einstellungen',d);}
+function renderHub(){const A=$('actions');A.innerHTML='';const hc=$('hubchip');if(hc)hc.textContent=rank(solved())+' · '+META.arrested.length+'/8 gefasst · Prämien '+META.money.toLocaleString('de-DE');
+  if(MODE==='title')return;
+  if(MODE==='cell'){const b=box('Zellentrakt');b.append(btn('Zurück ins Büro','',()=>office()));A.append(b);return;}
+  const b=box('Büro Meridian');if(RING)b.append(btn('Telefon abnehmen','es klingelt',()=>hub('tel'),'here'));
+  b.append(btn('Pinnwand','',()=>hub('board')),btn('Aktenschrank',META.cases.length?META.cases.length+' Akten':'',()=>hub('cab')),btn('Zellentrakt',META.arrested.length+' von 8'+(META.neu?' · neu':''),()=>hub('cell')),btn('Dienstmarke',rank(solved()),()=>hub('badge')));A.append(b);}
+function boot(){const hud=document.querySelector('.hud'),hc=el('span','chip');hc.id='hubchip';hud.prepend(hc);
+  const pb=el('button','tog casebtn','Pinnwand');pb.type='button';pb.onclick=board;const gb=el('button','tog','Einstellungen');gb.type='button';gb.onclick=settings;hud.append(pb,gb);
+  const sb=el('button','act big startbtn','Spiel starten');sb.type='button';sb.onclick=()=>{try{AC=AC||new (window.AudioContext||window.webkitAudioContext)();}catch(e){}sb.remove();office();};$('titlecard').append(sb);
+  newGame();MODE='title';document.body.dataset.mode='title';document.querySelector('h1 small').textContent='Büro Meridian';document.querySelector('#titlecard em').textContent='Ein Fall für das Büro Meridian';setScene('buero','','');render();
+  setInterval(()=>{tk++;if(MODE==='office'&&RING&&!$('face').classList.contains('talk')&&!$('sheet')&&tk%5===0)ring();},1000);}
