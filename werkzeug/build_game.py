@@ -6,6 +6,8 @@ head=old[:old.index('<script>')]
 mask=re.search(r"const LAND='([0-9a-f]+)'",old).group(1)
 mid=old[old.index('/* ---------- Szene ---------- */'):old.index('/* ---------- Spiel ---------- */')]
 mid=mid.replace("if(id==='wien0')el.setAttribute('data-police','');","if(id==='wien0'&&S&&S.route[0]==='wien')el.setAttribute('data-police','');")
+mid=mid.replace("const show=()=>{$('cam'+camOn).classList.remove('on');el.classList.add('on');camOn=next;};","const show=()=>{$('cam'+camOn).classList.remove('on');el.classList.add('on');camOn=next;stageFig();};")
+assert 'stageFig();};' in mid
 mid=mid.replace("const a=COORD[from],b=COORD[to];","const a=CITY[from].co,b=CITY[to].co;").replace("g.fillText(n,p[0]+","g.fillText(CITY[n].name,p[0]+").replace("g.fillText('Flug nach '+to,34,58);","g.fillText('Flug nach '+CITY[to].name,34,58);")
 assert "CITY[from].co" in mid and "CITY[n].name" in mid and "CITY[to].name,34" in mid
 dur=json.load(open('dur3.json')) if os.path.exists('dur3.json') else {}
@@ -23,6 +25,33 @@ FOV['lima'][2]='__GEN__'
 
 COMPACT=r"""
 .tabs{display:none}
+.cam{transition:opacity 1.1s ease,transform 1.1s cubic-bezier(.3,.1,.2,1)}
+.cam.zoom{transform:scale(1.32)}
+.mv{container-type:size}
+.stg{position:absolute;left:50%;top:50%;width:max(100cqw,177.78cqh);aspect-ratio:16/9;transform:translate(-50%,-50%)}
+.fig{position:absolute;padding:0;margin:0;border:0;background:none;cursor:pointer;transform:translateX(-50%);-webkit-tap-highlight-color:transparent;animation:figin .7s cubic-bezier(.2,.8,.3,1) both;z-index:2}
+.fig.out{animation:figout .45s ease both;pointer-events:none}
+.fig img{height:100%;width:auto;display:block;transform-origin:50% 100%;animation:breathe 3.8s ease-in-out infinite;filter:var(--ton,none) drop-shadow(0 0 0 rgba(242,180,85,0));transition:filter .25s;user-select:none;-webkit-user-drag:none}
+.fig.full::before{content:"";position:absolute;left:8%;right:8%;bottom:-2.5%;height:7%;border-radius:50%;background:radial-gradient(rgba(0,0,0,.55),rgba(0,0,0,0) 70%)}
+.fig.nacht{--ton:url(#f-nacht)}
+.fig.dunkel{--ton:url(#f-dunkel)}
+.fig.warm{--ton:url(#f-warm)}
+.fig.abend{--ton:url(#f-abend)}
+.fig:hover img,.fig:focus-visible img{filter:var(--ton,none) drop-shadow(0 0 7px rgba(242,180,85,.95))}
+.fig:focus-visible{outline:none}
+.fig.talk img{animation:talk .42s ease-in-out infinite alternate}
+.fig.chip img{border-radius:50%;aspect-ratio:1;object-fit:cover;box-shadow:0 0 0 3px var(--teal,#58c7bd),0 6px 18px rgba(0,0,0,.6);animation:none}
+.fig.chip{animation:figin .7s both,float 3s ease-in-out .7s infinite}
+.bub{position:absolute;left:50%;top:-13%;transform:translateX(-50%);min-width:1.5em;height:1.5em;line-height:1.5em;border-radius:50%;background:var(--amber);color:#1c1405;font:700 clamp(12px,1.6cqw,20px)/1.5 var(--body);font-style:normal;text-align:center;box-shadow:0 3px 10px rgba(0,0,0,.5);animation:hop 1.1s ease-in-out infinite}
+.fig.seen .bub,.fig.talk .bub,.fig:disabled .bub{display:none}
+.act.here{border-color:var(--amber)}
+@keyframes figin{from{opacity:0;transform:translateX(-50%) translateX(9%)}to{opacity:1;transform:translateX(-50%)}}
+@keyframes figout{to{opacity:0;transform:translateX(-50%) translateX(-6%)}}
+@keyframes breathe{50%{transform:scaleY(1.014) scaleX(.996)}}
+@keyframes talk{from{transform:translateY(0) rotate(-.5deg)}to{transform:translateY(-1.3%) rotate(.6deg)}}
+@keyframes hop{50%{transform:translateX(-50%) translateY(-28%)}}
+@keyframes float{50%{margin-bottom:1.2%}}
+@media (prefers-reduced-motion:reduce){.fig,.fig img,.bub{animation:none!important}.cam.zoom{transform:none}}
 .lv{display:flex;gap:6px}.lv button{flex:1;min-width:0;background:transparent;color:var(--muted);border:1px solid var(--line);border-radius:8px;padding:8px 4px;font:inherit;font-size:14px;min-height:38px;cursor:pointer}.lv button[aria-pressed="true"]{background:var(--amber);color:#1c1405;border-color:var(--amber);font-weight:600}
 #map{object-fit:contain;z-index:4}
 /* Handy und kleine Fenster: alles auf einem Bildschirm, kein Seiten-Scrollen */
@@ -78,6 +107,8 @@ COMPACT=r"""
 }
 """
 FX={'wien0':'rain','tokio0':'rain','lima1':'fog','tokio1':'fog','istanbul0':'dust','kairo0':'dust','kairo2':'dust','mumbai2':'dust','wien2':'dust','newyork0':'rain','reykjavik2':'fog','peking2':'fog','marrakesch1':'dust','nairobi0':'dust','rio2':'dust','peking1':'dust','marrakesch0':'fog'}
+FIG={'wien0':[80,5,50,'nacht'],'wien1':[57,8,58,'dunkel'],'wien2':[60,2,80,'warm']}
+FIGS=sorted(f[:-5] for f in os.listdir('../figuren') if f.endswith('.webp')) if os.path.isdir('../figuren') else []
 sus=re.search(r"const SUSPECTS=\[.*?\n\];\n",old,re.S).group(0)
 js=r'''
 'use strict';
@@ -89,6 +120,7 @@ const OV=__OV__;
 const FOV=__FOV__;
 const FX=__FX__;
 const DUR=__DUR__;
+const FIG=__FIG__, FIGS=__FIGS__;
 const LAND='__MASK__';
 const DAYS=['Mo','Di','Mi','Do','Fr','Sa','So'], START=9, QH=2;
 const LV={l:{n:'Leicht',buf:30,dec:3,len:6,notes:1,count:1,re:1,d:'Viel Zeit, 4 Reiseziele, das Notizbuch schreibt mit.'},
@@ -117,7 +149,8 @@ function makeRoute(start){
 function step(t,h){t+=h;const hr=t%24;if(hr>=23)t+=24-hr+7;else if(hr<7)t+=7-hr;return t;}
 function newGame(){
   const LC=LV[LVL];LEN=LC.len;let route=null,start;const starts=Object.keys(CITY).filter(k=>CITY[k].start);
-  while(!route){start=starts[Math.floor(Math.random()*starts.length)];route=makeRoute(start);}
+  const ps=new URLSearchParams(location.search).get('start');
+  while(!route){start=ps&&CITY[ps]&&CITY[ps].start?ps:starts[Math.floor(Math.random()*starts.length)];route=makeRoute(start);}
   const others=Object.keys(CITY).filter(k=>!route.includes(k));
   const ziele=route.slice(0,-1).map(()=>shuffle(others).slice(0,LC.dec));
   let t=0;for(let w=0;w<LEN;w++){let u=START;for(let i=0;i<LEN-1;i++){for(let q=0;q<3;q++)u=step(u,QH);if(i===w)u=step(u,1);u=step(u,hours(route[i],route[i+1]));}
@@ -147,7 +180,7 @@ function say(name,role,text,clips,pslug){
   if(f.dataset.who!==name){f.textContent='';f.dataset.who=name;
     if(slug){const im=new Image();im.src='portraits/'+slug+'.webp';im.alt='Porträt: '+name+', '+role;f.append(im);}else f.textContent=initials(name);
     f.classList.remove('pop');void f.offsetWidth;f.classList.add('pop');}
-  clearInterval(typing);stopAudio();const el=$('txt');
+  S.spk=pslug||'';clearInterval(typing);stopAudio();const el=$('txt');
   clips=(clips||[]).filter(c=>c in DUR);
   const speak=voiceOn&&clips.length,secs=speak?clips.reduce((n,c)=>n+DUR[c],0):0;
   if(speak){aq=clips.slice();f.classList.add('talk');nextClip();}
@@ -155,6 +188,31 @@ function say(name,role,text,clips,pslug){
   const tick=30,step=speak?Math.max(.35,text.length/(secs*.92*1000/tick)):2;let k=0;el.textContent='';f.classList.add('talk');
   typing=setInterval(()=>{k+=step;el.textContent=text.slice(0,Math.ceil(k));if(k>=text.length){clearInterval(typing);if(!cur)f.classList.remove('talk');}},tick);
 }
+let figKey='';
+function stageFig(){
+  if(!S)return;const id=S.scene||'',city=id.slice(0,-1),k=+id.slice(-1),c=CITY[city];
+  const want=S.started&&!S.decoy&&c&&c.id===cityNow().id?id:'';
+  const key=want+'|'+camOn+'|'+(want&&S.seen[S.i+'_'+k]?1:0)+'|'+(S.over?1:0);
+  if(key===figKey)return;const same=key.split('|').slice(0,2).join()===figKey.split('|').slice(0,2).join();figKey=key;
+  if(same){const f=document.querySelector('.fig');if(f){f.classList.toggle('seen',!!S.seen[S.i+'_'+k]);f.disabled=!!S.over;}return;}
+  document.querySelectorAll('.fig').forEach(f=>{f.classList.add('out');setTimeout(()=>f.remove(),500);});
+  if(!want)return;
+  const o=c.orte[k],p=FIG[id]||[66,5,58,''],has=FIGS.includes(o.p);
+  const b=document.createElement('button');b.type='button';b.className='fig '+(has?'full ':'chip ')+(p[3]||'')+(S.seen[S.i+'_'+k]?' seen':'');b.dataset.p=o.p;
+  b.style.left=p[0]+'%';b.style.bottom=p[1]+'%';b.style.height=(has?p[2]:22)+'%';if(!has)b.style.bottom=(p[1]+p[2]*.55)+'%';
+  b.setAttribute('aria-label','Mit '+o.zeuge+' sprechen, '+o.rolle);
+  const im=new Image();im.src=(has?'figuren/':'portraits/')+o.p+'.webp';im.alt=o.zeuge+', '+o.rolle+' am Schauplatz '+o.ort;im.draggable=false;
+  const bub=document.createElement('i');bub.className='bub';bub.textContent='!';b.append(im,bub);
+  b.onclick=()=>ask(k);b.disabled=!!S.over;
+  $('cam'+camOn).querySelector('.stg').append(b);
+}
+function goTo(k){if(S.over||S.busy)return;const c=cityNow(),o=c.orte[k];if(S.scene===c.id+k){ask(k);return;}
+  stopAudio();setScene(c.id+k,o.ort,c.name+', '+c.land);
+  say('Direktorin Halberg','per Funk',o.zeuge+' ('+o.rolle+') ist hier. Sprechen Sie die Person an.');render();}
+setInterval(()=>{if(!S)return;const f=document.querySelector('.fig:not(.out)'),on=!!f&&$('face').classList.contains('talk')&&S.spk===f.dataset.p,cam=$('cam'+camOn);
+  if(f)f.classList.toggle('talk',on);
+  if(on&&!cam.classList.contains('zoom')){const r=cam.getBoundingClientRect(),q=f.getBoundingClientRect();cam.style.transformOrigin=((q.left+q.width/2-r.left)/r.width*100).toFixed(1)+'% '+((q.top+q.height*.3-r.top)/r.height*100).toFixed(1)+'%';}
+  document.querySelectorAll('.cam').forEach(x=>x.classList.toggle('zoom',on&&x===cam));},160);
 function note(stadt,zeuge,text){if(!LV[LVL].notes)return;S.notes.unshift({stadt,zeuge,text});}
 function beute(){return CITY[S.route[0]].start.beute;}
 function timeUp(){if(S.t<=DEAD)return false;finish(false,'Die Frist ist abgelaufen. Die Spur ist kalt und der Zirkel hat die Beute außer Landes gebracht.','h_time');return true;}
@@ -232,7 +290,7 @@ function render(){
   else{
     const q=box('Befragen');
     if(S.decoy)q.append(btn('Am Flughafen umhören','1 h',()=>ask(0)));
-    else c.orte.forEach((o,k)=>{const done=S.seen[S.i+'_'+k];q.append(btn(o.ort,done?'notiert':QH+' h',()=>ask(k),done?'done':''));});
+    else c.orte.forEach((o,k)=>{const done=S.seen[S.i+'_'+k];const here=S.scene===c.id+k;q.append(btn(o.ort,done?'notiert':here?'ansprechen · '+QH+' h':'hingehen',()=>goTo(k),(done?'done':'')+(here?' here':'')));});
     const r=box('Reisen','r');
     if(S.decoy)r.append(btn('Zurück nach '+c.name,hours(S.decoy,c.id)+' h',()=>travel(c.id,hours(S.decoy,c.id),false)));
     else if(isFinal()){const p=document.createElement('p');p.className='hint';p.textContent='Die Spur endet in '+c.name+'. Hier fällt die Entscheidung.';r.append(p);}
@@ -255,7 +313,7 @@ function render(){
   $('stamp').hidden=!S.warrant;$('stamp').textContent=S.warrant?'Haftbefehl ausgestellt auf: '+S.warrant:'';
   const N=$('notes');N.innerHTML='';
   S.notes.forEach((n,i)=>{const li=document.createElement('li');if(i===0&&S.notes.length>lastNote)li.className='new';const b=document.createElement('b');b.textContent=n.stadt+' · '+n.zeuge;li.append(b,n.text);N.append(li);});
-  lastNote=S.notes.length;
+  lastNote=S.notes.length;stageFig();
   $('empty').hidden=S.notes.length>0;$('empty').textContent=LC.notes?'Noch keine Hinweise. Befrag die Zeugen in '+CITY[S.route[0]].name+'.':'Auf Stufe Schwer schreibt niemand für Sie mit. Merken Sie sich, was die Zeugen sagen.';
 }
 function setTab(t){document.body.dataset.tab=t;document.querySelectorAll('#tabs button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.t===t));}
@@ -267,12 +325,17 @@ if(!calm)requestAnimationFrame(fxLoop);
 '''
 FOV['lima'][2]='Die Person, die Sie suchen, kann nicht weit sein. Beeilen Sie sich.' if 'f_lima_2' in dur and False else 'Vor zehn Minuten wollte jemand hier etwas Wertvolles schätzen lassen. Die Person kann nicht weit sein.'
 J=lambda o:json.dumps(o,ensure_ascii=False,separators=(',',':'))
-js=js.replace('__CLUE__',J(D['CLUE'])).replace('__FINAL__',J(D['FINAL'])).replace('__SUS__',sus).replace('__CITY__',J(cities)).replace('__OV__',J(OV)).replace('__FOV__',J(FOV)).replace('__FX__',J(FX)).replace('__DUR__',J(dur)).replace('__MASK__',mask).replace('__MID__',mid)
+js=js.replace('__CLUE__',J(D['CLUE'])).replace('__FINAL__',J(D['FINAL'])).replace('__SUS__',sus).replace('__CITY__',J(cities)).replace('__OV__',J(OV)).replace('__FOV__',J(FOV)).replace('__FX__',J(FX)).replace('__DUR__',J(dur)).replace('__FIG__',J(FIG)).replace('__FIGS__',J(FIGS)).replace('__MASK__',mask).replace('__MID__',mid)
 head=head.replace('<h1>Akte Meridian<small>Fall 1 · Das Salzfass von Wien</small></h1>','<h1>Akte Meridian<small>Fall</small></h1>').replace('Frist Sa 18:00 · noch <b id="remain">129 h</b>','Frist <b id="frist">Sa 18:00</b> · noch <b id="remain">129 h</b>').replace('<em>Fall 1 · Das Salzfass von Wien</em>','<em>Fall</em>')
 head=head.replace('<div class="left">','<nav class="tabs" id="tabs" aria-label="Bereiche"><button type="button" data-t="q" aria-pressed="true">Befragen</button><button type="button" data-t="r" aria-pressed="false">Reisen</button><button type="button" data-t="p" aria-pressed="false">Profil</button><button type="button" data-t="n" id="tab-n" aria-pressed="false">Notizen</button></nav>\n    <div class="left">')
 head=head.replace('<section>\n        <h2>Täterprofil</h2>','<section id="sec-p">\n        <h2>Täterprofil</h2>').replace('<section>\n        <h2>Kartei: Der Zirkel</h2>','<section id="sec-k">\n        <h2>Kartei: Der Zirkel</h2>').replace('<section>\n        <h2>Notizbuch</h2>','<section id="sec-n">\n        <h2>Notizbuch</h2>')
 assert 'id="sec-p"' in head and 'id="sec-k"' in head and 'id="sec-n"' in head and 'id="tabs"' in head
-head=head.replace('<body>','<body data-tab="q">').replace('</style>',COMPACT+'</style>')
+n0=head.count('<div class="mv"><img')
+head=re.sub(r'<div class="mv">(<img[^>]*>)<i class="pulse"></i></div>',r'<div class="mv"><div class="stg">\1<i class="pulse"></i></div></div>',head)
+assert head.count('<div class="stg">')==2,n0
+_fm=lambda n,r,g,b:'<filter id="f-%s" color-interpolation-filters="sRGB"><feColorMatrix type="matrix" values="%s 0 0 0 0 0 %s 0 0 0 0 0 %s 0 0 0 0 0 1 0"/></filter>'%(n,r,g,b)
+SVGF='<svg width="0" height="0" style="position:absolute" aria-hidden="true">'+_fm('nacht',.5,.6,.92)+_fm('dunkel',.7,.75,.8)+_fm('warm',.98,.86,.66)+_fm('abend',.95,.78,.68)+'</svg>'
+head=head.replace('<body>','<body data-tab="q">'+SVGF).replace('</style>',COMPACT+'</style>')
 assert 'id="frist"' in head
 
 for _a,_b in [
