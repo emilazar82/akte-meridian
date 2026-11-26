@@ -203,6 +203,10 @@ body[data-mode="title"] .actions,body[data-mode="title"] .dialog{visibility:hidd
 FX={'wien0':'rain','tokio0':'rain','lima1':'fog','tokio1':'fog','istanbul0':'dust','kairo0':'dust','kairo2':'dust','mumbai2':'dust','wien2':'dust','newyork0':'rain','reykjavik2':'fog','peking2':'fog','marrakesch1':'dust','nairobi0':'dust','rio2':'dust','peking1':'dust','marrakesch0':'fog'}
 FIGS=sorted(f[:-5] for f in os.listdir('../figuren') if f.endswith('.webp')) if os.path.isdir('../figuren') else []
 sus=re.search(r"const SUSPECTS=\[.*?\n\];\n",old,re.S).group(0)
+Z2=json.load(open('zirkel2.json'));Z2OK=all(os.path.exists('../figuren/z_%s.webp'%z[0].split()[-1].lower()) for z in Z2)
+_extra=''.join(" ,{name:%s,haar:%s,hobby:%s,fahrzeug:%s,merkmal:%s,essen:%s}\n"%tuple(json.dumps(v,ensure_ascii=False) for v in z[:6]) for z in Z2) if Z2OK else ''
+sus=sus.replace('const SUSPECTS=[','const ALLSUS=[').replace('\n];\n','\n'+_extra+'];\nlet SUSPECTS=ALLSUS.slice(0,8);\nconst PRIS2='+json.dumps({z[0].split()[-1].lower():z[7] for z in Z2},ensure_ascii=False)+';\n')
+print('Zirkel:',16 if Z2OK else 8)
 js=r'''
 'use strict';
 const ATTR=[['haar','Haarfarbe'],['hobby','Hobby'],['fahrzeug','Fahrzeug'],['merkmal','Merkmal'],['essen','Lieblingsessen']];
@@ -241,7 +245,7 @@ function makeRoute(start){
 }
 function step(t,h){t+=h;const hr=t%24;if(hr>=23)t+=24-hr+7;else if(hr<7)t+=7-hr;return t;}
 function newGame(fix){
-  const LC=LV[LVL],NA=(typeof META==='object'&&fix)?META.arrested.length:0,BUF=Math.max(4,LC.buf-3*NA);LEN=LC.len;let route=null,start;const starts=Object.keys(CITY).filter(k=>CITY[k].start);
+  const LC=LV[LVL],NA=(typeof META==='object'&&fix)?Math.max(0,8-ALLSUS.filter(x=>!META.arrested.includes(x.name)).length):0,BUF=Math.max(4,LC.buf-3*NA);LEN=LC.len;let route=null,start;const starts=Object.keys(CITY).filter(k=>CITY[k].start);
   const ps=fix;
   while(!route){start=ps&&CITY[ps]&&CITY[ps].start?ps:starts[Math.floor(Math.random()*starts.length)];route=makeRoute(start);}
   const others=Object.keys(CITY).filter(k=>!route.includes(k));
@@ -437,7 +441,7 @@ function render(){
   }
   const F=$('fields');
   if(!F.children.length){ATTR.forEach(a=>{const l=document.createElement('label');l.htmlFor='p-'+a[0];l.textContent=a[1];const s=document.createElement('select');s.id='p-'+a[0];
-    const vals=[...new Set(SUSPECTS.map(x=>x[a[0]]))].sort((x,y)=>x.localeCompare(y,'de'));
+    const vals=[...new Set(ALLSUS.map(x=>x[a[0]]))].sort((x,y)=>x.localeCompare(y,'de'));
     s.innerHTML='<option value="">unbekannt</option>';vals.forEach(v=>{const o=document.createElement('option');o.value=v;o.textContent=v;s.append(o);});
     s.onchange=()=>{S.profile[a[0]]=s.value;render();};F.append(l,s);});}
   ATTR.forEach(a=>{$('p-'+a[0]).value=S.profile[a[0]];});
