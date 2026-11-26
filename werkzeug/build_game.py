@@ -148,6 +148,15 @@ body[data-mode="title"] .actions,body[data-mode="title"] .dialog{visibility:hidd
 .row{display:flex;flex-direction:column;gap:2px;padding:10px 12px;border-radius:8px;background:#0e1524;border-left:5px solid #7be0a2}.row.no{border-left-color:var(--red)}.row small{color:var(--muted)}
 @media (max-width:900px),(max-height:520px){.mug{grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}.sheet h2{font-size:18px}.hud .tog{font-size:11px;padding:3px 8px}}
 @media (prefers-reduced-motion:reduce){.phone,.waves i,.bars.slam,.fig.pris{animation:none!important}.waves i{opacity:.8}}
+.wm canvas{width:100%;height:auto;display:block;border-radius:8px;background:#0b101b;cursor:pointer;touch-action:manipulation}
+.wmc{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0}
+.wmc button{background:transparent;color:var(--text);border:1px solid var(--line);border-radius:99px;padding:5px 11px;font:inherit;font-size:13px;cursor:pointer;min-height:32px}
+.wmc button[aria-pressed="true"]{background:var(--amber);color:#1c1405;border-color:var(--amber);font-weight:600}
+.wmo{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px}
+.wmo button{display:flex;flex-direction:column;gap:3px;text-align:left;padding:10px 12px;border-radius:8px;border:1px solid var(--line);background:#0e1524;color:var(--text);font:inherit;cursor:pointer}
+.wmo button b{font-size:15px}.wmo button span{font-size:13px;color:var(--muted)}.wmo button em{font-style:normal;color:var(--amber);font-size:13px}
+.wmo button:disabled{opacity:.45;cursor:default}
+.wmh{font-size:13px;color:var(--muted);margin:0 0 8px}
 .chip.tick{animation:tick .6s ease}
 @keyframes tick{30%{transform:scale(1.12);box-shadow:0 0 14px rgba(242,180,85,.7)}}
 @media (prefers-reduced-motion:reduce){.item,.card,.raid,.chip.tick{animation:none!important}.fig{translate:none}}
@@ -176,6 +185,7 @@ body[data-mode="title"] .actions,body[data-mode="title"] .dialog{visibility:hidd
   .dialog{grid-area:scene;align-self:end;z-index:3;margin:6px;min-height:0;max-height:62%;overflow:auto;padding:8px;gap:8px;background:rgba(13,19,32,.88)}
   body.flying .dialog,body.flying .place{visibility:hidden}
   .ib{width:32px;height:32px}.ib svg{width:16px;height:16px}
+  .wm canvas{max-height:46vh;width:auto;max-width:100%;margin:0 auto}
   .timerow,#hubchip{font-size:13px;gap:12px}
   .dialog{pointer-events:none;transition:opacity .5s}
   .dialog.idle{opacity:0}
@@ -211,11 +221,13 @@ body[data-mode="title"] .actions,body[data-mode="title"] .dialog{visibility:hidd
 }
 @media (max-width:900px) and (orientation:portrait){
   header{flex-wrap:wrap}
+  .wm canvas{max-height:none;width:100%}
   .main{grid-template-columns:minmax(0,1fr);grid-template-rows:auto auto auto minmax(0,1fr);grid-template-areas:"scene" "dialog" "tabs" "panel"}
   .scene{aspect-ratio:auto;height:calc((100vw - 16px)*.5625);max-height:40vh;align-self:start}
   .dialog{grid-area:dialog;margin:0;max-height:26vh;align-self:auto;background:var(--panel)}
   .place{top:auto;bottom:8px}
   header{flex-wrap:wrap}
+  .wm canvas{max-height:none;width:100%}
   header h1{flex:1 1 auto}
   .timerow,#hubchip{order:3;flex:1 1 100%;justify-content:space-between;gap:8px}
   body.flying .dialog{visibility:visible}
@@ -275,10 +287,10 @@ function newGame(fix){
   while(!route){start=ps&&CITY[ps]&&CITY[ps].start?ps:starts[Math.floor(Math.random()*starts.length)];route=makeRoute(start);}
   const others=Object.keys(CITY).filter(k=>!route.includes(k));
   const ziele=route.slice(0,-1).map(()=>shuffle(others).slice(0,Math.min(others.length,LC.dec+Math.floor(NA/3))));
-  let t=0;for(let w=0;w<LEN;w++){let u=START;for(let i=0;i<LEN-1;i++){for(let q=0;q<3;q++)u=step(u,QH);if(i===w)u=step(u,1);u=step(u,hours(route[i],route[i+1]));}
+  let t=0;for(let w=0;w<LEN;w++){let u=START;for(let i=0;i<LEN-1;i++){for(let q=0;q<3;q++)u=step(u,QH);if(i===w)u=step(u,1);u=step(u,hours(route[i],route[i+1])+2);}
     if(w===LEN-1)u=step(u,1);u=step(u,QH);u=step(u,QH);t=Math.max(t,u);}DEAD=BUF>10?Math.ceil((t+BUF)/6)*6:t+BUF;
   document.body.dataset.lv=LVL;
-  S={route,ziele,i:0,decoy:null,t:START,seen:{},notes:[],profile:{},warrant:null,culprit:SUSPECTS[Math.floor(Math.random()*SUSPECTS.length)],fin:0,xs:{},hs:{},items:route.slice(0,-1).map((r,n)=>({k:Math.floor(Math.random()*3),h:Math.floor(Math.random()*3),type:(LVL==='s'||!CITY[route[n+1]].cur||Math.random()<.5)?'ticket':'beleg',found:false})),over:false,started:false,busy:false,scene:null};
+  S={route,ziele,i:0,decoy:null,t:START,seen:{},notes:[],profile:{},warrant:null,culprit:SUSPECTS[Math.floor(Math.random()*SUSPECTS.length)],fin:0,xs:{},hs:{},cash:1500,items:route.slice(0,-1).map((r,n)=>({k:Math.floor(Math.random()*3),h:Math.floor(Math.random()*3),type:(LVL==='s'||!CITY[route[n+1]].cur||Math.random()<.5)?'ticket':'beleg',found:false})),over:false,started:false,busy:false,scene:null};
   ATTR.forEach(a=>S.profile[a[0]]='');lastNote=0;
   document.querySelectorAll('.stampbig,.card,.raid').forEach(x=>x.remove());
   const c=CITY[start],fall='Fall: '+c.start.fall;
@@ -421,8 +433,8 @@ function travel(to,h,correct){
   S.busy=true;render();let fin=false;
   const land=()=>{if(fin)return;fin=true;
     const slept=advance(h);S.busy=false;document.body.classList.remove('flying');$('map').hidden=true;try{setTab('q');
-    if(S.decoy){S.decoy=null;setScene(c0.id+'0',c0.orte[0].ort,c0.name+', '+c0.land);say('Direktorin Halberg','per Funk','Zurück am letzten sicheren Punkt der Spur. Sehen Sie sich die Hinweise noch einmal genau an.',['h_back']);}
-    else if(correct){S.i++;const c=cityNow();setScene(c.id+'0',c.orte[0].ort,c.name+', '+c.land);
+    if(to===c0.id){S.decoy=null;setScene(c0.id+'0',c0.orte[0].ort,c0.name+', '+c0.land);say('Direktorin Halberg','per Funk','Zurück am letzten sicheren Punkt der Spur. Sehen Sie sich die Hinweise noch einmal genau an.',['h_back']);}
+    else if(correct){S.decoy=null;S.i++;const c=cityNow();setScene(c.id+'0',c.orte[0].ort,c.name+', '+c.land);
       if(isFinal())say('Direktorin Halberg','per Funk','Hier endet die Spur. Hören Sie sich um, aber greifen Sie nur mit gültigem Haftbefehl zu.',['h_final']);
       else say('Direktorin Halberg','per Funk','Gute Arbeit. In '+c.name+' wurde die Person gesehen. Hören Sie sich um.'+gh()+(slept?'\n\n(Sie sind erst um 7 Uhr wieder einsatzbereit.)':''),['h_arr_'+c.id]);}
     else{S.decoy=to;setScene('flughafen','Flughafen',CITY[to].name+', '+CITY[to].land);say('Direktorin Halberg','per Funk','Falsche Fährte. Von der gesuchten Person haben wir hier keine einzige Meldung.',['h_decoy']);}
@@ -458,10 +470,9 @@ function render(){
     if(S.decoy)q.append(btn('Am Flughafen umhören','1 h',()=>ask(0)));
     else c.orte.forEach((o,k)=>{const done=S.seen[S.i+'_'+k];const here=S.scene===c.id+k;q.append(btn(o.ort,done?'notiert':here?(LC.mark?'ansprechen · '+QH+' h':'hier'):'hingehen',()=>goTo(k),(done?'done':'')+(here?' here':'')));});
     const r=box('Reisen','r');
-    if(S.decoy)r.append(btn('Zurück nach '+c.name,hours(S.decoy,c.id)+' h',()=>travel(c.id,hours(S.decoy,c.id),false)));
-    else if(isFinal()){const p=document.createElement('p');p.className='hint';p.textContent='Die Spur endet in '+c.name+'. Hier fällt die Entscheidung.';r.append(p);}
-    else{const next=S.route[S.i+1];const z=S.ziele[S.i].map(x=>[x,false]).concat([[next,true]]).sort((a,b)=>CITY[a[0]].name.localeCompare(CITY[b[0]].name,'de'));
-      z.forEach(x=>{const h=hours(c.id,x[0]);r.append(btn(CITY[x[0]].name,h+' h Flug',()=>travel(x[0],h,x[1])));});}
+    if(isFinal()&&!S.decoy){const p=document.createElement('p');p.className='hint';p.textContent='Die Spur endet in '+c.name+'. Hier fällt die Entscheidung.';r.append(p);}
+    else{const p=document.createElement('p');p.className='hint';p.textContent='Spesen '+S.cash.toLocaleString('de-DE')+' · Prämien '+META.money.toLocaleString('de-DE');r.append(p,btn('Weltkarte öffnen','Ziel und Verkehrsmittel wählen',worldmap,'here'));
+      if(S.decoy)r.append(btn('Zurück nach '+c.name,'Linienflug · '+(hours(S.decoy,c.id)+2)+' h',()=>book(c.id,TRAVEL[1])));}
     A.append(q,r);
   }
   const F=$('fields');
