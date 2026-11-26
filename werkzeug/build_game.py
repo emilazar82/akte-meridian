@@ -30,8 +30,6 @@ COMPACT=r"""
 .tabs{display:none}
 .cam{transition:opacity 1.1s ease,transform 1.1s cubic-bezier(.3,.1,.2,1)}
 .cam.zoom{transform:scale(1.32)}
-.cam{pointer-events:none}.cam.on{pointer-events:auto}
-.place,.vig,.titlecard.gone{pointer-events:none}
 .mv{container-type:size}
 .stg{position:absolute;left:50%;top:50%;width:max(100cqw,177.78cqh);aspect-ratio:16/9;transform:translate(-50%,-50%)}
 .fig{position:absolute;padding:0;margin:0;border:0;background:none;cursor:pointer;transform:translateX(-50%);-webkit-tap-highlight-color:transparent;animation:figin .7s cubic-bezier(.2,.8,.3,1) both;z-index:2}
@@ -50,6 +48,7 @@ COMPACT=r"""
 .bub{position:absolute;left:50%;top:-13%;transform:translateX(-50%);min-width:1.5em;height:1.5em;line-height:1.5em;border-radius:50%;background:var(--amber);color:#1c1405;font:700 clamp(12px,1.6cqw,20px)/1.5 var(--body);font-style:normal;text-align:center;box-shadow:0 3px 10px rgba(0,0,0,.5);animation:hop 1.1s ease-in-out infinite}
 .fig.seen .bub,.fig.talk .bub,.fig:disabled .bub{display:none}
 .act.here{border-color:var(--amber)}
+.scene{touch-action:manipulation}
 .fig{translate:calc(var(--px,0)*var(--par,1)*-.5cqw) 0;transition:translate .5s ease-out}
 .fig img{animation-delay:var(--d,0s)}
 .fig img.flip{scale:-1 1}
@@ -226,7 +225,7 @@ function mkFig(slug,p,flip,ton,label,alt,fn,cls){
   b.style.setProperty('--d',(-(Math.random()*3).toFixed(2))+'s');b.style.setProperty('--par',(1.4-p[1]/40).toFixed(2));
   b.setAttribute('aria-label',label);
   const im=new Image();im.src=(has?'figuren/':'portraits/')+slug+'.webp';im.alt=alt;im.draggable=false;if(flip&&has)im.classList.add('flip');
-  b.append(im);b.onclick=fn;return b;}
+  b.append(im);b._act=fn;b.onclick=e=>{if(!e||e.detail===0)fn();};return b;}
 function stageFig(){
   if(!S)return;const id=S.scene||'',city=id.slice(0,-1),k=+id.slice(-1),c=CITY[city],LC=LV[LVL];
   const want=S.started&&!S.decoy&&c&&c.id===cityNow().id?id:'';
@@ -240,7 +239,7 @@ function stageFig(){
       (P.e||[]).forEach(e=>{if(!EX[e[0]]||!FIGS.includes(e[0]))return;st.append(mkFig(e[0],[e[1],e[2],e[3]],e[4],P.t,'Mit '+EX[e[0]][0]+' sprechen',EX[e[0]][0]+' am Schauplatz '+o.ort,()=>askExtra(e[0]),'ext'));});
       const it=S.items&&S.items[S.i];
       if(it&&it.k===k&&!it.found&&!isFinal()){const b=document.createElement('button');b.type='button';b.className='item';b.setAttribute('aria-label','Fundstück ansehen');
-        const x=P.w[0]+(P.w[0]>50?-24:24);b.style.left=x+'%';b.style.bottom=Math.max(2,P.w[1]-2)+'%';b.onclick=pick;st.append(b);}
+        const x=P.w[0]+(P.w[0]>50?-24:24);b.style.left=x+'%';b.style.bottom=Math.max(2,P.w[1]-2)+'%';b._act=pick;b.onclick=e=>{if(!e||e.detail===0)pick();};st.append(b);}
     }
   }
   document.querySelectorAll('.fig:not(.out)').forEach(f=>{if(f.classList.contains('wit'))f.classList.toggle('seen',!!S.seen[S.i+'_'+k]);f.disabled=!!S.over||!!S.busy;});
@@ -254,7 +253,7 @@ function pick(){if(S.over||S.busy)return;const it=S.items[S.i],y=S.route[S.i+1],
   let txt;
   if(it.type==='ticket'){card.innerHTML='<small>BORDKARTE · ABSCHNITT</small><b>'+c.iata+' → '+CITY[y].iata+'</b><span>Sitz 14C · Gate geschlossen</span>';txt='Abschnitt einer Bordkarte, Strecke '+c.iata+' → '+CITY[y].iata+'.';}
   else{card.innerHTML='<small>WECHSELSTUBE · QUITTUNG</small><b>'+CITY[y].cur+'</b><span>Betrag bar ausgezahlt</span>';txt='Quittung einer Wechselstube, ausgezahlt in: '+CITY[y].cur+'.';}
-  card.onclick=()=>card.remove();$('scene').append(card);
+  card.onclick=e=>{if(!e||e.detail===0)card.remove();};card._t=performance.now();$('scene').append(card);
   note(c.name,'Fundstück',txt);
   say('Direktorin Halberg','per Funk','Gut gesehen. Das hat die gesuchte Person verloren.\n\nFundstück: '+txt,['h_item']);timeUp();render();}
 function goTo(k){if(S.over||S.busy)return;const c=cityNow(),o=c.orte[k];if(S.scene===c.id+k){if(LV[LVL].mark)ask(k);return;}
@@ -264,6 +263,14 @@ setInterval(()=>{if(!S)return;const cam=$('cam'+camOn);let on=false;
   document.querySelectorAll('.fig:not(.out)').forEach(f=>{const t=$('face').classList.contains('talk')&&S.spk===f.dataset.p;f.classList.toggle('talk',t);
     if(t){on=true;if(!cam.classList.contains('zoom')){const r=cam.getBoundingClientRect(),q=f.getBoundingClientRect();cam.style.transformOrigin=((q.left+q.width/2-r.left)/r.width*100).toFixed(1)+'% '+((q.top+q.height*.3-r.top)/r.height*100).toFixed(1)+'%';}}});
   document.querySelectorAll('.cam').forEach(x=>x.classList.toggle('zoom',on&&x===cam));},160);
+{let pd=null;const sc=$('scene');
+  sc.addEventListener('pointerdown',e=>{pd=[e.clientX,e.clientY,performance.now()];});
+  sc.addEventListener('pointerup',e=>{if(!pd)return;const dx=e.clientX-pd[0],dy=e.clientY-pd[1],dt=performance.now()-pd[2];pd=null;if(dx*dx+dy*dy>400||dt>900||!S)return;
+    const x=e.clientX,y=e.clientY,card=document.querySelector('.card');
+    if(card){if(performance.now()-card._t>350)card.remove();return;}
+    const hit=[...document.querySelectorAll('.item,.fig:not(.out)')].filter(el=>!el.disabled&&el._act).map(el=>{const r=el.getBoundingClientRect(),it=el.classList.contains('item'),m=it?14:4;return {el,ok:x>=r.left-m&&x<=r.right+m&&y>=r.top-m&&y<=r.bottom+m,z:it?999:(+el.style.zIndex||0)};}).filter(o=>o.ok).sort((a,b)=>b.z-a.z)[0];
+    if(hit)hit.el._act();});
+  sc.addEventListener('pointercancel',()=>{pd=null;});}
 $('scene').addEventListener('pointermove',e=>{const r=$('scene').getBoundingClientRect();$('scene').style.setProperty('--px',((e.clientX-r.left)/r.width*2-1).toFixed(3));});
 function note(stadt,zeuge,text){if(!LV[LVL].notes)return;S.notes.unshift({stadt,zeuge,text});}
 function beute(){return CITY[S.route[0]].start.beute;}
@@ -308,16 +315,17 @@ function ask(k){
 function travel(to,h,correct){
   if(S.over||S.busy)return;
   const c0=cityNow(),from=S.decoy||c0.id;
-  S.busy=true;render();
-  fly(from,to,h,()=>{
-    const slept=advance(h);S.busy=false;setTab('q');
+  S.busy=true;render();let fin=false;
+  const land=()=>{if(fin)return;fin=true;
+    const slept=advance(h);S.busy=false;document.body.classList.remove('flying');$('map').hidden=true;try{setTab('q');
     if(S.decoy){S.decoy=null;setScene(c0.id+'0',c0.orte[0].ort,c0.name+', '+c0.land);say('Direktorin Halberg','per Funk','Zurück am letzten sicheren Punkt der Spur. Sehen Sie sich die Hinweise noch einmal genau an.',['h_back']);}
     else if(correct){S.i++;const c=cityNow();setScene(c.id+'0',c.orte[0].ort,c.name+', '+c.land);
       if(isFinal())say('Direktorin Halberg','per Funk','Hier endet die Spur. Hören Sie sich um, aber greifen Sie nur mit gültigem Haftbefehl zu.',['h_final']);
       else say('Direktorin Halberg','per Funk','Gute Arbeit. In '+c.name+' wurde die Person gesehen. Hören Sie sich um.'+(slept?'\n\n(Sie sind erst um 7 Uhr wieder einsatzbereit.)':''),['h_arr_'+c.id]);}
     else{S.decoy=to;setScene('flughafen','Flughafen',CITY[to].name+', '+CITY[to].land);say('Direktorin Halberg','per Funk','Falsche Fährte. Von der gesuchten Person haben wir hier keine einzige Meldung.',['h_decoy']);}
-    timeUp();render();
-  });
+    }finally{timeUp();render();}
+  };
+  fly(from,to,h,land);setTimeout(land,6500);
 }
 function issue(){
   const m=matches();if(S.over||S.busy||!S.started||m.length!==1)return;
