@@ -1,5 +1,6 @@
 // Panorama-Buehne: Laufen und Springen durch breite Szenen, Verfolgung am Zielort
 const PANO=__PANO__,PJAGD=__PJAGD__;
+Object.assign(PANO,__PANO2__);Object.assign(PJAGD,__PJAGD2__);
 const PPR={kiste:[172,159,1],stapel:[181,295,.86],fass:[161,229,1],bank:[318,248,.5],sperre:[260,179,1],saeule:[183,411,0]};
 const PTON={nacht:'rgba(28,44,96,.36)',dunkel:'rgba(22,30,58,.3)',abend:'rgba(120,60,30,.2)',warm:'rgba(150,90,20,.16)'};
 const PIMG={};function pimg(s){return PIMG[s]||(PIMG[s]=Object.assign(new Image(),{src:s}));}
