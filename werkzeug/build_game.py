@@ -191,7 +191,7 @@ body[data-mode="title"] .actions,body[data-mode="title"] .dialog{visibility:hidd
 .pbtn.l{left:8px}.pbtn.r{left:calc(16px + var(--ps))}.pbtn.j{right:8px}
 .pbtn.a{right:calc(16px + var(--ps));width:auto;padding:0 14px;border-radius:99px;border-color:#58c7bd;color:#58c7bd;font-size:13px;font-weight:600;touch-action:manipulation}
 body.flying .pano,body.flying .pbtn{display:none}
-body.pano .place{z-index:7;top:8px!important;bottom:auto!important}body.pano .vig{display:none}
+body.pano .dialog{z-index:8}body.pano .place{z-index:7;top:8px!important;bottom:auto!important}body.pano .vig{display:none}
 .stampbig,.card,.raid{z-index:9}
 .act{min-width:0}.act>span{min-width:0;overflow-wrap:anywhere}.act small{white-space:normal;min-width:0;text-align:right;overflow-wrap:anywhere}
 .cm{display:flex;flex-direction:column;gap:8px}
