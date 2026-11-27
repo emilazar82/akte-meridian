@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>Akte Meridian – Probe 2,5D: Copacabana mit räumlicher Tiefe</title>
+<meta name="description" content="Technikprobe zu Akte Meridian: die gemalte Copacabana als 2,5D-Szene mit gestaffelten Ebenen, Kamerafahrt und einer Ermittlerin, die auch in die Tiefe läuft.">
+<meta name="robots" content="noindex">
+<style>
+html,body{margin:0;height:100%;overflow:hidden;background:#0d1320;color:#e8edf6;font-family:"IBM Plex Sans",system-ui,sans-serif;overscroll-behavior:none}
+*{-webkit-touch-callout:none;-webkit-tap-highlight-color:transparent;-webkit-user-select:none;user-select:none;touch-action:none}
+canvas{position:fixed;inset:0;width:100%;height:100%;display:block}
+.chip{position:fixed;left:12px;top:12px;padding:8px 12px;border-radius:10px;background:rgba(13,19,32,.72);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);font-size:14px;line-height:1.3;border:1px solid rgba(255,236,200,.25)}
+.chip b{display:block;color:#f2b455;font-size:15px}
+.hint{position:fixed;left:50%;bottom:14px;transform:translateX(-50%);padding:6px 12px;border-radius:99px;background:rgba(13,19,32,.6);font-size:13px;white-space:nowrap;transition:opacity .6s}
+.stick{position:fixed;left:18px;bottom:18px;width:clamp(96px,26vmin,140px);aspect-ratio:1;border-radius:50%;border:1.5px solid rgba(255,236,200,.55);background:radial-gradient(circle at 35% 28%,rgba(255,255,255,.18),rgba(13,19,32,.34) 62%);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);box-shadow:0 5px 16px rgba(0,0,0,.4)}
+.knob{position:absolute;left:50%;top:50%;width:42%;aspect-ratio:1;margin:-21% 0 0 -21%;border-radius:50%;background:radial-gradient(circle at 35% 28%,rgba(255,236,190,.95),rgba(242,180,85,.8) 70%);box-shadow:0 3px 10px rgba(0,0,0,.45)}
+.tog{position:fixed;right:12px;top:12px;padding:9px 14px;border-radius:99px;border:1.5px solid rgba(120,226,214,.75);background:rgba(13,19,32,.6);color:#d9fffa;font:600 14px inherit;cursor:pointer}
+#load{position:fixed;inset:0;display:grid;place-items:center;background:#0d1320;font-size:16px;z-index:5}
+</style>
+</head>
+<body>
+<canvas id="c" role="img" aria-label="Gemalte Strandpromenade der Copacabana als räumliche 2,5D-Szene: Kiosk, Sonnenschirme, Rettungsturm und Palmen stehen in gestaffelter Tiefe vor Meer und Zuckerhut"></canvas>
+<div class="chip"><b>Probe 2,5D</b>Copacabana, Rio de Janeiro</div>
+<button class="tog" id="tog" type="button" aria-pressed="true">Tiefe: an</button>
+<div class="stick" id="stick" aria-label="Steuerknüppel: in alle Richtungen laufen"><div class="knob" id="knob"></div></div>
+<div class="hint" id="hint">Knüppel oder Pfeiltasten: laufen, auch nach vorn und hinten</div>
+<div id="load">Szene wird geladen …</div>
+<script type="module">
+import * as T from './three.module.min.js';
+const F=1200,V0=470,IH=800,IW=2400,CH=1.6,ZOOM=1.1,A=V0/ZOOM,Bq=(IH-V0)/ZOOM,DN=CH*F/Bq;
+const META={kiosk:{x0:0,x1:589,y0:168,y1:659,base:642},schirme:{x0:421,x1:1054,y0:473,y1:644,base:632},netz:{x0:1073,x1:1283,y0:457,y1:601,base:594},turm:{x0:1331,x1:1629,y0:338,y1:601,base:596},palmen:{x0:1544,x1:2400,y0:0,y1:663,base:654}};
+const cv=document.getElementById('c'),R=new T.WebGLRenderer({canvas:cv,antialias:true});
+R.outputColorSpace=T.LinearSRGBColorSpace;R.setPixelRatio(Math.min(2,devicePixelRatio||1));
+const scene=new T.Scene(),cam=new T.PerspectiveCamera();cam.matrixAutoUpdate=true;
+const mgr=new T.LoadingManager(),TL=new T.TextureLoader(mgr),maxA=R.capabilities.getMaxAnisotropy();
+const tex=u=>{const t=TL.load(u);t.anisotropy=maxA;t.generateMipmaps=true;t.minFilter=T.LinearMipmapLinearFilter;return t;};
+const bg=tex('bg.webp');
+// Boden: das Gemälde wird von der Malkamera aus auf die Bodenebene projiziert
+const floor=new T.Mesh(new T.PlaneGeometry(2400,900).rotateX(-Math.PI/2).translate(0,0,-452),new T.ShaderMaterial({uniforms:{map:{value:bg},fl:{value:0}},
+ vertexShader:'varying vec3 w;void main(){vec4 p=modelMatrix*vec4(position,1.);w=p.xyz;gl_Position=projectionMatrix*viewMatrix*p;}',
+ fragmentShader:`uniform sampler2D map;uniform float fl;varying vec3 w;void main(){float d=max(.5,-w.z);float u=.5+${F}.*(w.x-fl*(1.-d/${(DN+1.5).toFixed(3)}))/(d*${IW}.);float v=${V0}.+${F}.*${CH}/d;gl_FragColor=texture2D(map,vec2(clamp(u,0.,1.),1.-clamp(v,0.,${IH-1}.)/${IH}.));}`}));
+floor.renderOrder=0;scene.add(floor);
+// Fernkulisse: Himmel, Berge, Stadt
+{const d=600,v1=V0+3,g=new T.PlaneGeometry(2*d,v1*d/F);const uv=g.attributes.uv;for(let i=0;i<uv.count;i++)uv.setY(i,1-v1/IH+uv.getY(i)*v1/IH);
+ const m=new T.Mesh(g,new T.MeshBasicMaterial({map:bg,depthTest:false,depthWrite:false}));m.position.set(0,CH+(V0-v1/2)*d/F,-d);m.renderOrder=-1;scene.add(m);}
+floor.material.depthTest=false;floor.material.depthWrite=false;
+const items=[];// alles, was nach Tiefe sortiert gezeichnet wird
+const mat=t=>new T.MeshBasicMaterial({map:t,transparent:true,depthTest:false,depthWrite:false,side:T.DoubleSide});
+for(const n in META){const o=META[n],d=CH*F/(o.base-V0),w=(o.x1-o.x0)*d/F,h=(o.y1-o.y0)*d/F,m=new T.Mesh(new T.PlaneGeometry(w,h),mat(tex('c_'+n+'.webp')));
+ m.position.set(((o.x0+o.x1)/2-IW/2)*d/F,CH-((o.y0+o.y1)/2-V0)*d/F,-d);m.userData={d0:d,x0:m.position.x,y0:m.position.y};scene.add(m);items.push({m,d:()=>d,card:1});}
+const shadowG=new T.CircleGeometry(1,24).rotateX(-Math.PI/2);
+function figure(t,hM,asp){const g=new T.Group(),sp=new T.Mesh(new T.PlaneGeometry(1,1).translate(0,.5,0),mat(t)),sh=new T.Mesh(shadowG,new T.MeshBasicMaterial({color:0,transparent:true,opacity:.3,depthTest:false,depthWrite:false}));
+ sh.scale.set(.42,1,.13);sh.position.y=.01;sp.scale.set(hM*asp,hM,1);g.add(sh,sp);scene.add(g);return {g,sp,sh};}
+const idleT=tex('../pano/h_idle.webp'),runT=[];for(let i=0;i<36;i++)runT.push(tex('../pano/v_run'+String(i).padStart(2,'0')+'.webp'));
+const HM=1.72,hero=figure(idleT,HM,160/520),H={x:0,d:7.4,dir:1,dist:0,run:false};
+const NPC=[['../figuren/santos.webp',3.4,8.8,1.76],['../figuren/x_jogger.webp',-3,7.9,1.8],['../figuren/x_tourist.webp',1.2,13.4,1.7]].map(([u,x,d,h])=>{const t=TL.load(u,tt=>{f.sp.scale.set(h*tt.image.width/tt.image.height,h,1);});t.anisotropy=maxA;const f=figure(t,h,.4);f.g.position.set(x,0,-d);items.push({m:f.g,d:()=>d});return {f,x,d,h,ph:Math.random()*6};});
+items.push({m:hero.g,d:()=>H.d});
+let W=1,Hh=1,hp=600,depthOn=true;
+function size(){W=innerWidth;Hh=innerHeight;R.setSize(W,Hh,false);hp=(A+Bq)*W/Hh/2;const n=.5;cam.projectionMatrix.makePerspective(-n*hp/F,n*hp/F,n*A/F,-n*Bq/F,n,2000);cam.projectionMatrixInverse.copy(cam.projectionMatrix).invert();}
+addEventListener('resize',size);size();
+// Eingabe
+const K={};addEventListener('keydown',e=>{K[e.key.toLowerCase()]=1;if(e.key.startsWith('Arrow'))e.preventDefault();});addEventListener('keyup',e=>{K[e.key.toLowerCase()]=0;});
+const st=document.getElementById('stick'),kn=document.getElementById('knob'),J={x:0,y:0,id:null};
+const jm=e=>{const r=st.getBoundingClientRect(),m=r.width/2;let x=(e.clientX-r.left-m)/m,y=(e.clientY-r.top-m)/m;const l=Math.hypot(x,y);if(l>1){x/=l;y/=l;}J.x=x;J.y=y;kn.style.transform=`translate(${x*70}%,${y*70}%)`;};
+st.addEventListener('pointerdown',e=>{J.id=e.pointerId;st.setPointerCapture(e.pointerId);jm(e);});st.addEventListener('pointermove',e=>{if(e.pointerId===J.id)jm(e);});
+const ju=e=>{if(e.pointerId!==J.id)return;J.id=null;J.x=J.y=0;kn.style.transform='';};st.addEventListener('pointerup',ju);st.addEventListener('pointercancel',ju);
+['contextmenu','gesturestart','dragstart','selectstart'].forEach(t=>document.addEventListener(t,e=>e.preventDefault(),{passive:false}));
+const tog=document.getElementById('tog');tog.onclick=()=>{depthOn=!depthOn;tog.textContent='Tiefe: '+(depthOn?'an':'aus');tog.setAttribute('aria-pressed',depthOn);};
+const blocked=(x,d)=>{if(d>10.3&&d<13.6&&x<(589-1200)*d/F+.25)return true;if(d>9.9&&d<11.3&&x>(1790-1200)*d/F-.25)return true;if(d>14.6&&d<16.8&&x>(1331-1200)*d/F-.3&&x<(1629-1200)*d/F+.3)return true;return false;};
+let last=performance.now(),idle=0,camX=0,camC=0,moved=false;
+function tick(now){const dt=Math.min(.05,(now-last)/1000);last=now;
+ let ix=J.x+((K.arrowright||K.d)?1:0)-((K.arrowleft||K.a)?1:0),iy=J.y+((K.arrowdown||K.s)?1:0)-((K.arrowup||K.w)?1:0);const l=Math.hypot(ix,iy);if(l>1){ix/=l;iy/=l;}
+ if(!depthOn)iy=0;
+ H.run=l>.15;
+ if(H.run){if(!moved){moved=true;document.getElementById('hint').style.opacity=0;}idle=0;const vx=ix*3.4,vd=-iy*2.6;let nx=H.x+vx*dt,nd=Math.min(17,Math.max(6.9,H.d+vd*dt));{const cc=Math.max(0,Math.min(6,(nd-7.4)*.55)),lim=Math.max(.5,Math.max(0,(cc+DN)-DN*hp/F-.05)+(nd-cc)*hp/F-.55);nx=Math.max(-lim,Math.min(lim,nx));}
+  if(blocked(nx,nd)){if(!blocked(nx,H.d))nd=H.d;else if(!blocked(H.x,nd))nx=H.x;else{nx=H.x;nd=H.d;}}
+  H.dist+=Math.hypot(nx-H.x,nd-H.d);H.x=nx;H.d=nd;if(Math.abs(ix)>.12)H.dir=ix>0?1:-1;}else idle+=dt;
+ const fr=H.run?runT[Math.floor(H.dist/.108)%36]:idleT;if(hero.sp.material.map!==fr){hero.sp.material.map=fr;}
+ const hh=H.run?HM*491/520:HM,asp=H.run?493/491:160/520;hero.sp.scale.set(hh*asp*H.dir,hh*(H.run?1:1+Math.sin(now/700)*.006),1);
+ hero.g.position.set(H.x,0,-H.d);
+ NPC.forEach(n=>{n.f.sp.scale.y=n.h*(1+Math.sin(now/900+n.ph)*.006);});
+ // Kamera: folgt seitlich und fährt mit in die Tiefe
+ const cT=depthOn?Math.max(0,Math.min(6,(H.d-7.4)*.55)):0;camC+=(cT-camC)*Math.min(1,dt*3);
+ const xm=Math.max(0,(camC+DN)-DN*hp/F-.05);let xT=Math.max(-xm,Math.min(xm,H.x+(depthOn&&idle>1.2?Math.sin(now/1400)*.35*Math.min(1,(idle-1.2)/1.5):0)));camX+=(xT-camX)*Math.min(1,dt*4);
+ cam.position.set(camX,CH,-camC);
+ // Vergleich „Tiefe aus“: alle Ebenen bewegen sich wie ein flaches Bild
+ flat(depthOn?0:1);
+ items.sort((a,b)=>b.d()-a.d()).forEach((it,i)=>{it.m.traverse(o=>{o.renderOrder=10+i*2+(o===it.m.children?.[1]?1:0);});});
+ R.render(scene,cam);requestAnimationFrame(tick);}
+// „Tiefe aus“: Kulissen und Fernbild so nachführen, dass keine Parallaxe entsteht (wie die jetzige flache Szene)
+function flat(on){const ref=DN+1.5;scene.children.forEach(o=>{if(o===floor||!o.isMesh)return;const u=o.userData;if(u.d0===undefined){u.d0=-o.position.z;u.x0=o.position.x;u.y0=o.position.y;}o.position.x=u.x0+(on?camX*(1-u.d0/ref):0);});floor.material.uniforms.fl.value=on?camX:0;}
+mgr.onLoad=()=>{document.getElementById('load').remove();requestAnimationFrame(t=>{last=t;tick(t);});};
+window.PROBE={H,cam,K,get camC(){return camC},get camX(){return camX}};
+</script>
+</body>
+</html>
