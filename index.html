@@ -2,7 +2,7 @@
 <html lang="de">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <title>Akte Meridian</title>
 <meta name="description" content="Akte Meridian: Detektiv-Reisespiel mit handgemalten Schauplätzen. Zeugen befragen, Hinweise sammeln, Haftbefehl ausstellen und die Spur um die Welt verfolgen.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -392,6 +392,13 @@ body.flying .exit,.exit:disabled{display:none}
   .dialog{pointer-events:auto}.dialog.idle{opacity:1}
   .card{top:42%}
 }
+
+html,body{overscroll-behavior:none;-webkit-text-size-adjust:100%;text-size-adjust:100%}
+*{-webkit-touch-callout:none;-webkit-tap-highlight-color:transparent;touch-action:manipulation}
+body{-webkit-user-select:none;user-select:none}
+input,textarea,select{-webkit-user-select:auto;user-select:auto}
+img,canvas,svg{-webkit-user-drag:none;user-drag:none}
+img{pointer-events:none}
 </style>
 </head>
 <body data-tab="q"><svg width="0" height="0" style="position:absolute" aria-hidden="true"><filter id="f-nacht" color-interpolation-filters="sRGB"><feColorMatrix type="matrix" values="0.5 0 0 0 0 0 0.6 0 0 0 0 0 0.92 0 0 0 0 0 1 0"/></filter><filter id="f-dunkel" color-interpolation-filters="sRGB"><feColorMatrix type="matrix" values="0.7 0 0 0 0 0 0.75 0 0 0 0 0 0.8 0 0 0 0 0 1 0"/></filter><filter id="f-warm" color-interpolation-filters="sRGB"><feColorMatrix type="matrix" values="0.98 0 0 0 0 0 0.86 0 0 0 0 0 0.66 0 0 0 0 0 1 0"/></filter><filter id="f-abend" color-interpolation-filters="sRGB"><feColorMatrix type="matrix" values="0.95 0 0 0 0 0 0.78 0 0 0 0 0 0.68 0 0 0 0 0 1 0"/></filter></svg>
@@ -1100,6 +1107,13 @@ function panoChase(city,done){const J=PJAGD[city];S.busy=true;S.pend=null;render
 
 boot();
 if(!calm)requestAnimationFrame(fxLoop);
+(function(){const stop=e=>e.preventDefault(),o={passive:false};
+['contextmenu','dragstart','gesturestart','gesturechange','gestureend'].forEach(t=>document.addEventListener(t,stop,o));
+document.addEventListener('selectstart',e=>{if(!/^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName||''))e.preventDefault();},o);
+document.addEventListener('touchmove',e=>{if(e.touches.length>1)e.preventDefault();},o);
+let lt=0;document.addEventListener('touchend',e=>{const n=Date.now();if(n-lt<320&&!/^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName||'')&&!e.target.closest('button,.pbtn,canvas,select,a,[onclick]'))e.preventDefault();lt=n;},o);
+addEventListener('wheel',e=>{if(e.ctrlKey)e.preventDefault();},o);
+addEventListener('keydown',e=>{if((e.ctrlKey||e.metaKey)&&['+','-','=','0'].includes(e.key))e.preventDefault();});})();
 </script>
 </body>
 </html>

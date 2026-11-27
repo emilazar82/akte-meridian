@@ -672,6 +672,7 @@ assert head.count('<div class="stg">')==2,n0
 _fm=lambda n,r,g,b:'<filter id="f-%s" color-interpolation-filters="sRGB"><feColorMatrix type="matrix" values="%s 0 0 0 0 0 %s 0 0 0 0 0 %s 0 0 0 0 0 1 0"/></filter>'%(n,r,g,b)
 SVGF='<svg width="0" height="0" style="position:absolute" aria-hidden="true">'+_fm('nacht',.5,.6,.92)+_fm('dunkel',.7,.75,.8)+_fm('warm',.98,.86,.66)+_fm('abend',.95,.78,.68)+'</svg>'
 head=head.replace('<body>','<body data-tab="q">'+SVGF).replace('</style>',COMPACT+'</style>')
+head=head.replace('</style>','\nhtml,body{overscroll-behavior:none;-webkit-text-size-adjust:100%;text-size-adjust:100%}\n*{-webkit-touch-callout:none;-webkit-tap-highlight-color:transparent;touch-action:manipulation}\nbody{-webkit-user-select:none;user-select:none}\ninput,textarea,select{-webkit-user-select:auto;user-select:auto}\nimg,canvas,svg{-webkit-user-drag:none;user-drag:none}\nimg{pointer-events:none}\n'+'</style>').replace('content="width=device-width, initial-scale=1"','content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no"')
 assert 'id="frist"' in head
 
 for _a,_b in [
@@ -683,5 +684,6 @@ for _a,_b in [
 ]:
     assert _a in js,_a
     js=js.replace(_a,_b)
+js=js+"(function(){const stop=e=>e.preventDefault(),o={passive:false};\n['contextmenu','dragstart','gesturestart','gesturechange','gestureend'].forEach(t=>document.addEventListener(t,stop,o));\ndocument.addEventListener('selectstart',e=>{if(!/^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName||''))e.preventDefault();},o);\ndocument.addEventListener('touchmove',e=>{if(e.touches.length>1)e.preventDefault();},o);\nlet lt=0;document.addEventListener('touchend',e=>{const n=Date.now();if(n-lt<320&&!/^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName||'')&&!e.target.closest('button,.pbtn,canvas,select,a,[onclick]'))e.preventDefault();lt=n;},o);\naddEventListener('wheel',e=>{if(e.ctrlKey)e.preventDefault();},o);\naddEventListener('keydown',e=>{if((e.ctrlKey||e.metaKey)&&['+','-','=','0'].includes(e.key))e.preventDefault();});})();\n"
 html=head+'<script>'+js+'</script>\n</body>\n</html>\n'
 open('../index.html','w').write(html);open('/tmp/g.js','w').write(js);print('ok',len(html))
