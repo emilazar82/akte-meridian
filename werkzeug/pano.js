@@ -12,8 +12,8 @@ function panoKill(){if(PA){if(PA.o.id)PL={id:PA.o.id,x:PA.H.x,dir:PA.H.dir,from:
 function panoObjs(list,U){return (list||[]).map(o=>{const p=PPR[o[0]];return {n:o[0],x:o[1],solid:p[2]>0,w:p[0]*U*.84,h:p[1]*U*p[2],dw:p[0]*U,dh:p[1]*U,im:pimg('pano/p_'+o[0]+'.webp')};});}
 function panoMake(o){panoKill();const sc=$('scene'),cv=document.createElement('canvas');cv.className='pano';cv.setAttribute('role','img');cv.setAttribute('aria-label',o.alt);
   if(!PSP)PSP={idle:pimg('pano/h_idle.webp'),run:pseq('v_run',36),jmp:pseq('v_jmp',24),lnd:pseq('v_lnd',11),dieb:pseq('v_dieb',21)};
-  const mk=(c,t,l)=>{const b=document.createElement('button');b.type='button';b.className='pbtn '+c;b.textContent=t;b.setAttribute('aria-label',l);return b;};
-  const bl=mk('l','◀','Nach links laufen'),br=mk('r','▶','Nach rechts laufen'),bj=mk('j','▲','Springen'),ba=mk('a','','Aktion');ba.hidden=true;
+  const mk=(c,t,l)=>{const b=document.createElement('button');b.type='button';b.className='pbtn '+c;if(t)b.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="'+t+'"/></svg>';b.setAttribute('aria-label',l);return b;};
+  const bl=mk('l','M15 4L7 12l8 8','Nach links laufen'),br=mk('r','M9 4l8 8-8 8','Nach rechts laufen'),bj=mk('j','M4 15l8-8 8 8','Springen'),ba=mk('a','','Aktion');ba.hidden=true;
   sc.append(cv,bl,br,ba,bj);document.body.classList.add('pano');if(o.T&&document.activeElement&&document.activeElement.blur)document.activeElement.blur();
   const P=PA={cv,g:cv.getContext('2d'),pad:[bl,br,ba,bj],o,W:1,Hh:1,cam:0,keys:{},last:0,tint:new Map(),landT:0,wasAir:false,near:null,
     world:o.world,gy:o.gy,hh:o.hh,U:o.hh/520,z:o.z||1,img:pimg(o.img),ton:PTON[o.ton]||'',ents:o.ents||[],objs:[],T:o.T||null,
