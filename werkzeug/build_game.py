@@ -60,7 +60,7 @@ COMPACT=r"""
 .chint b{font-family:var(--display);font-size:22px;color:var(--amber)}.chint span{font-size:14px}.chint em{font-style:normal;font-weight:600;color:var(--teal,#58c7bd);animation:blink 1s ease-in-out infinite}
 .cskip{position:absolute;right:8px;top:8px;z-index:2;background:rgba(13,19,32,.85);color:var(--muted);border:1px solid var(--line);border-radius:99px;padding:6px 12px;font:inherit;font-size:12.5px;cursor:pointer;min-height:32px}
 @keyframes blink{50%{opacity:.35}}
-@media (max-height:620px) and (orientation:portrait){.scene{max-height:32vh!important}.dialog{max-height:19vh!important}}
+@media (max-height:620px) and (orientation:portrait){.scene{max-height:32vh!important}body.pano .scene{max-height:44dvh!important}.dialog{max-height:19vh!important}}
 .hero{position:absolute;aspect-ratio:328/520;transform:translateX(-50%);pointer-events:none;translate:calc(var(--px,0)*var(--par,1)*-.5cqw) 0;transition:translate .5s ease-out;animation:figin .5s ease both}
 .hero img{position:absolute;inset:0;width:100%;height:100%;transform-origin:50% 100%;filter:var(--ton,none);user-select:none;-webkit-user-drag:none;animation:breathe 3.8s ease-in-out infinite}
 .hero.flip img{scale:-1 1}
@@ -305,6 +305,10 @@ body.flying .exit,.exit:disabled{display:none}
   .main{grid-template-columns:minmax(0,1fr);grid-template-rows:auto auto auto minmax(0,1fr);grid-template-areas:"scene" "dialog" "tabs" "panel"}
   .scene{aspect-ratio:auto;height:calc((100vw - 16px)*.5625);max-height:40vh;align-self:start}
   .dialog,body.pano .dialog{grid-area:dialog;margin:0;max-height:26vh;overflow:hidden;align-self:auto;background:var(--panel)}
+  body.pano .scene{height:49dvh;max-height:49dvh}
+  body.pano .dialog{max-height:19dvh}
+  body.pano[data-tab="p"] .dialog,body.pano[data-tab="n"] .dialog{display:none}
+  body.pano[data-tab="p"] .main,body.pano[data-tab="n"] .main{grid-template-areas:"scene" "tabs" "panel";grid-template-rows:auto auto minmax(0,1fr)}
   .place{top:auto;bottom:8px}
   header{flex-wrap:wrap}
   .wm canvas{max-height:34vh}
