@@ -43,7 +43,7 @@ function panoStep(P,dt){const H=P.H,HW=.034,frozen=P.T&&P.T.st!=='run';
   if(!mv&&H.target!=null&&!frozen){const d=H.target-H.x;if(Math.abs(d)<.014){if(H.y===0||H.on){H.target=null;const a=H.after;H.after=null;if(a)a();}}else{mv=d>0?1:-1;top0=Math.min(.72,Math.abs(d)*5+.1);}}
   if(mv)H.dir=mv;
   const feet=-H.y,blk=d=>P.objs.some(o=>{if(!o.solid)return false;const e=o.w/2+HW,n=Math.abs(H.x+d-o.x);return n<e&&n<Math.abs(H.x-o.x)&&feet<o.h-.012;});
-  if(mv&&blk(mv*.006)){H.vx=0;H.run=0;if(H.target!=null&&(H.y===0||H.on))panoJump();}
+  if(mv&&blk(mv*.006)){H.vx=P.T?Math.max(0,Math.min(H.vx,.5)):0;H.run=0;if(H.target!=null&&(H.y===0||H.on))panoJump();}
   else{const want=mv*top0,acc=(mv?3.2:4.5)*dt;H.vx+=Math.max(-acc,Math.min(acc,want-H.vx));if(calm)H.vx=want;
     if(Math.abs(H.vx)>.04&&!blk(H.vx*dt)){const nx=Math.max(.04,Math.min(P.world-.04,H.x+H.vx*dt));H.dist+=Math.abs(nx-H.x);H.run=nx!==H.x?1:0;H.x=nx;}
     else{H.run=0;if(Math.abs(H.vx)>.04)H.vx=0;}}
@@ -114,4 +114,4 @@ function panoChase(city,done){const J=PJAGD[city];S.busy=true;S.pend=null;render
   const cb=win=>{panoKill();S.busy=false;figKey='';if(win){done();render();return;}
     S.busy=true;S.pend=done;advance(3);if(timeUp()){S.pend=null;S.busy=false;render();return;}
     say('Direktorin Halberg','per Funk','Entwischt! Die Person ist in einer Seitengasse verschwunden. Das hat uns 3 Stunden gekostet.\n\nUnsere Leute haben sie wieder im Blick. Nehmen Sie die Verfolgung noch einmal auf.');render();};
-  panoMake({img:'pano/'+J.img+'.webp',z:J.z,world,gy:J.gy,hh:J.hh,ton:J.ton,props,start:.45,T:{st:'run',x:1.4,v:{l:.58,m:.61,s:.64}[LVL],dist:0,t:0,cb},alt:'Verfolgungsjagd in '+CITY[city].name+': Die Ermittlerin rennt der flüchtenden Person durch eine Straße hinterher'});}
+  panoMake({img:'pano/'+J.img+'.webp',z:J.z,world,gy:J.gy,hh:J.hh,ton:J.ton,props,start:.45,T:{st:'run',x:1.4,v:{l:.54,m:.58,s:.61}[LVL],dist:0,t:0,cb},alt:'Verfolgungsjagd in '+CITY[city].name+': Die Ermittlerin rennt der flüchtenden Person durch eine Straße hinterher'});}
